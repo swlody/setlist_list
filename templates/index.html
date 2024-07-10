@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/tictactoe.svg" />
+    <link href="styles/output.css" rel="stylesheet" />
+    <link href="https://rsms.me/inter/inter.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://unpkg.com/htmx.org@2.0.0"
+      integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw"
+      crossorigin="anonymous"
+    ></script>
+    <title>SetListList</title>
+  </head>
+
+  <body>
+    <main>
+      <div class="md:container md:mx-auto">
+        <h1 class="text-3xl">Go + HTMX + Tailwind Example</h1>
+        <br />
+        <span class="text-xl text-red-500">Companies</span>
+        <button hx-get="/api/hello" hx-swap="outerHTML">Click Me!!!!!!</button>
+
+        <div class="game">
+          <div class="status">
+            <button class="bg-sky-500 hover:bg-sky-700">0</button>
+            <button class="bg-sky-500 hover:bg-sky-700">1</button>
+            <button class="bg-sky-500 hover:bg-sky-700">2</button>
+          </div>
+          <div class="board">
+            <button class="bg-sky-500 hover:bg-sky-700">3</button>
+            <button class="bg-sky-500 hover:bg-sky-700">4</button>
+            <button class="bg-sky-500 hover:bg-sky-700">5</button>
+          </div>
+          <div class="buttons">
+            <button class="bg-sky-500 hover:bg-sky-700">6</button>
+            <button class="bg-sky-500 hover:bg-sky-700">7</button>
+            <button class="bg-sky-500 hover:bg-sky-700">8</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
