@@ -57,7 +57,7 @@ impl Hooks for App {
         async fn fallback_handler(
             ViewEngine(v): ViewEngine<TeraView>,
         ) -> Result<impl IntoResponse> {
-            crate::views::not_found::not_found(v)
+            crate::views::not_found::not_found(&v)
         }
 
         // TODO add tracing
