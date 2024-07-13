@@ -1,6 +1,6 @@
 use loco_rs::{boot::run_task, task, testing};
-use setlist_list::app::App;
 use serial_test::serial;
+use setlist_list::app::App;
 
 #[tokio::test]
 #[serial]

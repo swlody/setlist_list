@@ -1,11 +1,11 @@
 use insta::assert_debug_snapshot;
 use loco_rs::{model::ModelError, testing};
+use sea_orm::{ActiveModelTrait, ActiveValue, IntoActiveModel};
+use serial_test::serial;
 use setlist_list::{
     app::App,
     models::users::{self, Model, RegisterParams},
 };
-use sea_orm::{ActiveModelTrait, ActiveValue, IntoActiveModel};
-use serial_test::serial;
 
 macro_rules! configure_insta {
     ($($expr:expr),*) => {

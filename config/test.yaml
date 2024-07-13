@@ -55,9 +55,10 @@ server:
       # max_age: 3600
     static:
       enable: true
-      must_exist: false
+      must_exist: true
+      precompressed: false
       folder:
-        uri: "/"
+        uri: "/static"
         path: "assets/static"
       fallback: "assets/static/404.html"
 

@@ -60,6 +60,7 @@ impl Hooks for App {
             crate::views::not_found::not_found(v)
         }
 
+        // TODO add tracing
         Ok(router.fallback(fallback_handler))
     }
 
