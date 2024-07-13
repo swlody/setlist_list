@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use async_trait::async_trait;
+use axum::Router;
 use loco_rs::prelude::*;
 use loco_rs::{
     app::{AppContext, Hooks, Initializer},
@@ -53,15 +54,43 @@ impl Hooks for App {
             .add_route(controllers::user::routes())
     }
 
-    async fn after_routes(router: axum::Router, _ctx: &AppContext) -> Result<axum::Router> {
+    async fn after_routes(router: Router, _ctx: &AppContext) -> Result<Router> {
         async fn fallback_handler(
             ViewEngine(v): ViewEngine<TeraView>,
         ) -> Result<impl IntoResponse> {
             crate::views::not_found::not_found(&v)
         }
 
-        // TODO add tracing
-        Ok(router.fallback(fallback_handler))
+        // ref: https://github.com/loco-rs/loco/blob/1f2401951f445ef1d71ce41f562ab3d0fb89bcd3/src/controller/app_routes.rs#L375-L399
+        let fallback_router = Router::new().fallback(fallback_handler).layer(
+            tower_http::trace::TraceLayer::new_for_http().make_span_with(
+                |request: &axum::http::Request<_>| {
+                    let request_id = uuid::Uuid::new_v4();
+                    let user_agent = request
+                        .headers()
+                        .get(axum::http::header::USER_AGENT)
+                        .map_or("", |h| h.to_str().unwrap_or(""));
+
+                    let env: String = request
+                        .extensions()
+                        .get::<Environment>()
+                        .map(std::string::ToString::to_string)
+                        .unwrap_or_default();
+
+                    tracing::error_span!(
+                        "http-request",
+                        "http.method" = tracing::field::display(request.method()),
+                        "http.uri" = tracing::field::display(request.uri()),
+                        "http.version" = tracing::field::debug(request.version()),
+                        "http.user_agent" = tracing::field::display(user_agent),
+                        "environment" = tracing::field::display(env),
+                        request_id = tracing::field::display(request_id),
+                    )
+                },
+            ),
+        );
+
+        Ok(Router::new().merge(router).merge(fallback_router))
     }
 
     fn connect_workers<'a>(p: &'a mut Processor, ctx: &'a AppContext) {

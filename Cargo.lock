@@ -3881,6 +3881,7 @@ dependencies = [
  "serde_json",
  "serial_test",
  "tokio",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
  "unic-langid",
