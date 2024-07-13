@@ -3,4 +3,4 @@ pub mod user;
 
 pub mod tictactoe;
 
-pub mod hello;
+pub mod index;

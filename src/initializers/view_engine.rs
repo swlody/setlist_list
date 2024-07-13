@@ -10,6 +10,9 @@ use tracing::info;
 const I18N_DIR: &str = "assets/i18n";
 const I18N_SHARED: &str = "assets/i18n/shared.ftl";
 
+// TODO use maud instead? https://maud.lambda.xyz/
+// probably don't need the ViewEngine in that case
+
 pub struct ViewEngineInitializer;
 #[async_trait]
 impl Initializer for ViewEngineInitializer {

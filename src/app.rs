@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use async_trait::async_trait;
+use loco_rs::prelude::*;
 use loco_rs::{
     app::{AppContext, Hooks, Initializer},
     boot::{create_app, BootResult, StartMode},
@@ -47,11 +48,19 @@ impl Hooks for App {
 
     fn routes(_ctx: &AppContext) -> AppRoutes {
         AppRoutes::with_default_routes()
-            .prefix("/api")
-            .add_route(controllers::hello::routes())
-            .add_route(controllers::tictactoe::routes())
+            .add_route(controllers::index::routes())
             .add_route(controllers::auth::routes())
             .add_route(controllers::user::routes())
+    }
+
+    async fn after_routes(router: axum::Router, _ctx: &AppContext) -> Result<axum::Router> {
+        async fn fallback_handler(
+            ViewEngine(v): ViewEngine<TeraView>,
+        ) -> Result<impl IntoResponse> {
+            crate::views::not_found::not_found(v)
+        }
+
+        Ok(router.fallback(fallback_handler))
     }
 
     fn connect_workers<'a>(p: &'a mut Processor, ctx: &'a AppContext) {

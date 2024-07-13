@@ -19,7 +19,7 @@ server:
   # Port on which the server will listen. the server binding is 0.0.0.0:{PORT}
   port: 5150
   # The UI hostname or IP address that mailers will point to.
-  host: http://localhost
+  host: localhost
   # Out of the box middleware configuration. to disable middleware you can changed the `enable` field to `false` of comment the middleware block
   middlewares:
     # Enable Etag cache header middleware
@@ -61,25 +61,14 @@ server:
 
     # server-side static assets config
     # for use with the view_engine in initializers/view_engine.rs
-    #
-    # static:
-    #   enable: true
-    #   must_exist: true
-    #   precompressed: false
-    #   folder:
-    #     uri: "/static"
-    #     path: "assets/static"
-    #   fallback: "assets/static/404.html"
-
-    # client side app static config
     static:
       enable: true
       must_exist: true
       precompressed: false
       folder:
-        uri: "/"
-        path: "templates"
-      fallback: "templates/index.html"
+        uri: "/static"
+        path: "assets/static"
+      fallback: "assets/static/404.html"
 
 # Worker Configuration
 workers:
@@ -98,12 +87,12 @@ mailer:
     # SMTP server host. e.x localhost, smtp.gmail.com
     host: {{ get_env(name="MAILER_HOST", default="localhost") }}
     # SMTP server port
-    port: 1025
+    port: 587
     # Use secure connection (SSL/TLS).
-    secure: false
-    # auth:
-    #   user:
-    #   password:
+    secure: true
+    auth:
+      user: {{ get_env(name="MAILER_USERNAME", default="") }}
+      password: {{ get_env(name="MAILER_PASSWORD", default="") }}
 
 # Initializers Configuration
 # initializers:

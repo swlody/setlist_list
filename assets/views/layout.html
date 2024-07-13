@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% block head %}
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link href="styles/output.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="htmx.min.js"></script>
+    <title>{% block title %}{% endblock %} - SetListList</title>
+    {% endblock %}
+  </head>
+
+  <body>
+    <div id="content">{% block content %} {% endblock %}</div>
+
+    <footer>Copyright 2024 Sam Wlody</footer>
+  </body>
+</html>

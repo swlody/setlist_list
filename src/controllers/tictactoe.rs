@@ -6,7 +6,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 enum Player {
     X,
     O,
@@ -113,13 +113,60 @@ fn minimax(state: &GameState) -> GameResult {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+fn check_winner(board: &[Option<Player>; 9]) -> Option<Player> {
+    for i in 0..3 {
+        // Check rows
+        if let Some(winner) = get_line_winner(board[i * 3], board[i * 3 + 1], board[i * 3 + 2]) {
+            return Some(winner);
+        }
+
+        // Check columns
+        if let Some(winner) = get_line_winner(board[i], board[i + 3], board[i + 6]) {
+            return Some(winner);
+        }
+    }
+
+    // Check diagonals
+    if let Some(winner) = get_line_winner(board[0], board[4], board[8]) {
+        return Some(winner);
+    }
+
+    if let Some(winner) = get_line_winner(board[2], board[4], board[6]) {
+        return Some(winner);
+    }
+
+    None
+}
+
+#[derive(Clone, Debug)]
 pub struct GameState {
     board: [Option<Player>; 9],
     next_player: Player,
-    #[serde(skip)]
     winner: Option<Player>,
     computer_player: Player,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PartialGameState {
+    board: [Option<Player>; 9],
+    next_player: Player,
+}
+
+impl PartialGameState {
+    fn check_winner(&self) -> Option<Player> {
+        check_winner(&self.board)
+    }
+}
+
+impl From<PartialGameState> for GameState {
+    fn from(state: PartialGameState) -> Self {
+        Self {
+            board: state.board,
+            next_player: state.next_player,
+            winner: state.check_winner(),
+            computer_player: Player::X,
+        }
+    }
 }
 
 impl GameState {
@@ -148,15 +195,12 @@ impl GameState {
     }
 
     /// Get a list of the best moves
-    fn get_best_computer_moves(&self) -> Vec<Selection> {
-        // Start with the remaining possible moves
-        let possible_moves = self.open_squares();
-
+    fn get_best_computer_moves(&self, possible_moves: &[Selection]) -> Vec<Selection> {
         let mut best_so_far = GameResult::Loss;
         // The list of moves that lead to wins
         let mut winning_moves = Vec::new();
 
-        for m in possible_moves {
+        for &m in possible_moves {
             let move_result = minimax(&self.with_move(m.square));
 
             if move_result > best_so_far {
@@ -171,10 +215,14 @@ impl GameState {
     }
 
     /// Randomly choose one of the best moves to avoid repetitive games
-    fn get_random_computer_move(&self) -> Selection {
-        let best_moves = self.get_best_computer_moves();
-        let mut rng = rand::thread_rng();
-        best_moves[rng.gen_range(0..best_moves.len())]
+    fn get_random_computer_move(&self) -> Option<Selection> {
+        let possible_moves = self.open_squares();
+        if possible_moves.is_empty() {
+            return None;
+        }
+        let best_moves = self.get_best_computer_moves(&possible_moves);
+        let random_selection = rand::thread_rng().gen_range(0..best_moves.len());
+        Some(best_moves[random_selection])
     }
 
     /// Get a list of open squares, i.e. squares that are possible options for moves
@@ -194,34 +242,7 @@ impl GameState {
 
     /// Return the winner or None if there is no winner
     fn check_winner(&self) -> Option<Player> {
-        for i in 0..3 {
-            // Check rows
-            if let Some(winner) = get_line_winner(
-                self.board[i * 3],
-                self.board[i * 3 + 1],
-                self.board[i * 3 + 2],
-            ) {
-                return Some(winner);
-            }
-
-            // Check columns
-            if let Some(winner) =
-                get_line_winner(self.board[i], self.board[i + 3], self.board[i + 6])
-            {
-                return Some(winner);
-            }
-        }
-
-        // Check diagonals
-        if let Some(winner) = get_line_winner(self.board[0], self.board[4], self.board[8]) {
-            return Some(winner);
-        }
-
-        if let Some(winner) = get_line_winner(self.board[2], self.board[4], self.board[6]) {
-            return Some(winner);
-        }
-
-        None
+        check_winner(&self.board)
     }
 }
 
@@ -254,15 +275,16 @@ impl Display for GameState {
 #[debug_handler]
 pub async fn calculate_move(
     State(_ctx): State<AppContext>,
-    Json(state): Json<GameState>,
+    Json(partial_state): Json<PartialGameState>,
 ) -> Result<Response> {
-    tracing::info!("{:?}", state);
+    tracing::info!("{:?}", partial_state);
+    let state = GameState::from(partial_state);
     let selection = state.get_random_computer_move();
     format::json(selection)
 }
 
 pub fn routes() -> Routes {
     Routes::new()
-        .prefix("tictactoe")
+        .prefix("api/tictactoe")
         .add("/", post(calculate_move))
 }

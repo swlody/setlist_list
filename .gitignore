@@ -16,5 +16,5 @@ target/
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-templates/node_modules/
-templates/styles/output.css
+assets/node_modules/
+assets/static/styles/output.css
