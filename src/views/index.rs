@@ -5,7 +5,7 @@ pub fn root(v: &impl ViewRenderer) -> Result<impl IntoResponse> {
     format::render().view(v, "index.html", json!({"some": "value"}))
 }
 
-pub fn not_found(v: &impl ViewRenderer) -> Result<impl IntoResponse> {
+pub fn not_found(v: &impl ViewRenderer) -> Result<Response> {
     format::render()
         .status(axum::http::StatusCode::NOT_FOUND)
         .view(v, "404.html", json!({"some": "value"}))

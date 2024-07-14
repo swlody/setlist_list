@@ -1,11 +1,7 @@
 use std::path::Path;
 
 use async_trait::async_trait;
-use axum::extract::Request;
-use axum::{
-    http::{Method, StatusCode},
-    Router,
-};
+use axum::{extract::OriginalUri, response::Redirect, Router};
 use loco_rs::{
     app::{AppContext, Hooks, Initializer},
     boot::{create_app, BootResult, StartMode},
@@ -15,7 +11,7 @@ use loco_rs::{
     prelude::*,
     task::Tasks,
     worker::{AppWorker, Processor},
-    Result,
+    {Error, Result},
 };
 use migration::Migrator;
 use sea_orm::DatabaseConnection;
@@ -59,39 +55,11 @@ impl Hooks for App {
     }
 
     async fn after_routes(router: Router, _ctx: &AppContext) -> Result<Router> {
-        async fn fallback_handler(request: Request) -> Result<Response> {
-            let method = request.method();
-            if Method::GET == method {
-                tracing::debug!("redirecting to 404 from: {}", request.uri());
-                format::redirect("/404")
-            } else {
-                // ref: https://github.com/loco-rs/loco/blob/1f2401951f445ef1d71ce41f562ab3d0fb89bcd3/src/controller/app_routes.rs#L375-L399
-                let request_id = uuid::Uuid::new_v4();
-                let user_agent = request
-                    .headers()
-                    .get(axum::http::header::USER_AGENT)
-                    .map_or("", |h| h.to_str().unwrap_or(""));
-
-                tracing::error_span!(
-                    "http-request",
-                    "http.method" = tracing::field::display(request.method()),
-                    "http.uri" = tracing::field::display(request.uri()),
-                    "http.version" = tracing::field::debug(request.version()),
-                    "http.user_agent" = tracing::field::display(user_agent),
-                    request_id = tracing::field::display(request_id),
-                )
-                .in_scope(|| {
-                    tracing::event!(
-                        tracing::Level::DEBUG,
-                        "returning 404 not found for unknown route"
-                    );
-                });
-
-                Ok((StatusCode::NOT_FOUND, "").into_response())
-            }
-        }
-
-        Ok(router.fallback(fallback_handler))
+        let router = router.fallback(|uri: OriginalUri| async move {
+            tracing::debug!("redirecting from URL not found: {}", uri.path());
+            Ok::<_, Error>(Redirect::permanent("/404").into_response())
+        });
+        Ok(router)
     }
 
     fn connect_workers<'a>(p: &'a mut Processor, ctx: &'a AppContext) {
