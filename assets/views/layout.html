@@ -10,7 +10,11 @@
   </head>
 
   <body>
-    <div id="content">{% block content %} {% endblock %}</div>
+    <div id="content">
+      {% block content %}
+        <h1 class="text-3xl font-bold underline text-blue-300">SetListList</h1>
+      {% endblock %}
+    </div>
 
     <footer>Copyright 2024 Sam Wlody</footer>
   </body>
