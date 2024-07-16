@@ -26,7 +26,7 @@ jobs:
       run: |
         cd assets
         npm install
-        npx webpack --environment production
+        npx webpack --env production
 
     - uses: actions/upload-artifact@v4
       with:
