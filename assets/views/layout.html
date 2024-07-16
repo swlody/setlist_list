@@ -73,7 +73,7 @@
                 class="modal"
                 x-data="{ register: false }"
               >
-                <div class="modal-box space-y-4">
+                <div class="modal-box flex place-self-center">
                   <form method="dialog">
                     <button
                       class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
@@ -84,6 +84,7 @@
 
                   <form
                     id="login-form"
+                    class="w-full space-y-4"
                     :hx-post="register ? 'api/auth/register' : 'api/auth/login'"
                     hx-ext="json-enc"
                   >
@@ -152,14 +153,16 @@
                       class="btn btn-block"
                       x-text="register ? 'Register' : 'Login'"
                     ></button>
-                    <a
-                      class="link link-accent"
-                      x-on:click="register = !register"
-                      x-text="register ? 'Login' : 'Create an account'"
-                    ></a>
-                    <a class="link link-accent" x-show="!register"
-                      >Forgot password?</a
-                    >
+                    <div id="account-stuff" class="flex justify-around">
+                      <a
+                        class="link link-accent"
+                        x-on:click="register = !register"
+                        x-text="register ? 'Login' : 'Create an account'"
+                      ></a>
+                      <a class="link link-accent" x-show="!register">
+                        Forgot password?
+                      </a>
+                    </div>
                   </form>
                 </div>
               </dialog>

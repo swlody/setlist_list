@@ -19,4 +19,4 @@ target/
 **/.DS_Store
 
 assets/node_modules/
-assets/static/styles/output.css
+assets/static/dist/
