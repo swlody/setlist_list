@@ -1,3 +1,9 @@
+import Alpine from "alpinejs";
+window.Alpine = Alpine;
+Alpine.start();
+
+import htmx from "htmx.org";
+
 htmx.defineExtension("json-enc", {
   onEvent: function (name, evt) {
     if (name === "htmx:configRequest") {

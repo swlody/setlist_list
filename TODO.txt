@@ -1,0 +1,8 @@
+this is super temporary cause it's late at night but
+
+* login workflow
+* automatically run webpack, tailwind
+* automatically run prettier, tests, etc before push?
+* username vs User Name
+* simple db schema
+* figure out deployment

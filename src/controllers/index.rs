@@ -6,7 +6,8 @@ use axum::{
 use loco_rs::prelude::*;
 
 pub async fn root(ViewEngine(v): ViewEngine<TeraView>) -> Result<impl IntoResponse> {
-    crate::views::index::root(&v)
+    let random = crate::models::index::random_string();
+    crate::views::index::root(&v, &random)
 }
 
 async fn not_found(method: Method, ViewEngine(v): ViewEngine<TeraView>) -> Result<Response> {
