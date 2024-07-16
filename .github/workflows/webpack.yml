@@ -26,4 +26,10 @@ jobs:
       run: |
         cd assets
         npm install
-        npx webpack
+        npx webpack --environment production
+
+    - uses: actions/upload-artifact@v4
+      with:
+        path: assets/dist/main.js
+        if-no-files-found: error
+      
