@@ -43,7 +43,7 @@ impl Hooks for App {
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
         Ok(vec![Box::new(
-            initializers::view_engine::ViewEngineInitializer,
+            initializers::minijinja_view_engine::ViewEngineInitializer,
         )])
     }
 

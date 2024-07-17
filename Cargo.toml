@@ -9,7 +9,6 @@ edition = "2021"
 opt-level = 1
 
 [dependencies]
-
 loco-rs = { version = "0.6.1" }
 migration = { path = "migration" }
 
@@ -34,13 +33,13 @@ uuid = { version = "1.6.0", features = ["v4"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "json"] }
 
 # view engine i18n
-fluent-templates = { version = "0.9.4", features = ["tera"] }
-unic-langid = "0.9.4"
 rand = "0.8.5"
 axum-extra = { version = "0.9.3", features = ["query"] }
 tower-http = { version = "0.5.2", features = ["trace"] }
 tower-layer = "0.3.2"
 tower = "0.4.13"
+# TODO 'speedups' feature for production
+minijinja = { version = "2.0.3", features = ["loader"] }
 # /view engine
 
 [[bin]]

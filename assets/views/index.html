@@ -5,5 +5,13 @@
 {% endblock %}
 {% block content %}
   {{ super() }}
-  {% include "index_body.html" %}
+  {% block body %}
+    <img src="/static/image.png" width="200" />
+    <br />
+    <h2>SetListList</h2>
+    <h1 class="bg-slate-950 text-yellow-300">{{ random }}</h1>
+    <br />
+    <br />
+    {{ some }}
+  {% endblock %}
 {% endblock %}
