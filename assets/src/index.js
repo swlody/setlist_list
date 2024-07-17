@@ -11,7 +11,7 @@ htmx.defineExtension("json-enc", {
     }
   },
 
-  encodeParameters: function (xhr, parameters, elt) {
+  encodeParameters: function (xhr, parameters, _elt) {
     xhr.overrideMimeType("text/json");
     return JSON.stringify(parameters);
   },
