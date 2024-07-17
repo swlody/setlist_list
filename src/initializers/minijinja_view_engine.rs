@@ -28,11 +28,24 @@ impl MiniJinjaView {
 
 impl ViewRenderer for MiniJinjaView {
     fn render<S: Serialize>(&self, key: &str, data: S) -> Result<String> {
-        let tmpl = self
-            .env
-            .get_template(key)
-            .map_err(|e| Error::Anyhow(e.into()))?;
-        tmpl.render(data).map_err(|e| Error::Anyhow(e.into()))
+        if let Some((key, block)) = key.split_once(':') {
+            let tmpl = self
+                .env
+                .get_template(key)
+                .map_err(|e| Error::Anyhow(e.into()))?;
+
+            tmpl.eval_to_state(data)
+                .map_err(|e| Error::Anyhow(e.into()))?
+                .render_block(block)
+                .map_err(|e| Error::Anyhow(e.into()))
+        } else {
+            let tmpl = self
+                .env
+                .get_template(key)
+                .map_err(|e| Error::Anyhow(e.into()))?;
+
+            tmpl.render(data).map_err(|e| Error::Anyhow(e.into()))
+        }
     }
 }
 
