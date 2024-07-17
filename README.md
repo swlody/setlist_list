@@ -1,3 +1,5 @@
+[![CI](https://github.com/swlody/setlist_list/actions/workflows/ci.yaml/badge.svg)](https://github.com/swlody/setlist_list/actions/workflows/ci.yaml)
+
 Built with https://loco.rs
 
 WIP build:
