@@ -24,7 +24,6 @@ jobs:
 
     - name: Build
       run: |
-        cd assets
         npm install
         npx webpack --mode production
 
