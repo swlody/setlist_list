@@ -1,7 +1,11 @@
 use std::path::Path;
 
 use async_trait::async_trait;
-use axum::{extract::OriginalUri, response::Redirect, Router};
+use axum::{
+    extract::OriginalUri,
+    http::{Method, StatusCode},
+    Router,
+};
 use loco_rs::{
     app::{AppContext, Hooks, Initializer},
     boot::{create_app, BootResult, StartMode},
@@ -11,13 +15,17 @@ use loco_rs::{
     prelude::*,
     task::Tasks,
     worker::{AppWorker, Processor},
-    {Error, Result},
+    Result,
 };
 use migration::Migrator;
 use sea_orm::DatabaseConnection;
 
 use crate::{
-    controllers, initializers, models::_entities::users, tasks, workers::downloader::DownloadWorker,
+    controllers,
+    initializers::{self, minijinja_view_engine::MiniJinjaView},
+    models::_entities::users,
+    tasks, views,
+    workers::downloader::DownloadWorker,
 };
 
 pub struct App;
@@ -49,16 +57,26 @@ impl Hooks for App {
 
     fn routes(_ctx: &AppContext) -> AppRoutes {
         AppRoutes::with_default_routes()
-            .add_route(controllers::index::routes())
             .add_route(controllers::auth::routes())
             .add_route(controllers::user::routes())
     }
 
     async fn after_routes(router: Router, _ctx: &AppContext) -> Result<Router> {
-        let router = router.fallback(|uri: OriginalUri| async move {
-            tracing::debug!("redirecting from URL not found: {}", uri.path());
-            Ok::<_, Error>(Redirect::permanent("/404").into_response())
-        });
+        async fn fallback_handler(
+            ViewEngine(v): ViewEngine<MiniJinjaView>,
+            uri: OriginalUri,
+            method: Method,
+        ) -> impl IntoResponse {
+            tracing::debug!("Returning 404 for {} on {}", method, uri.path());
+            if method == Method::GET {
+                views::index::not_found(&v)
+            } else {
+                Ok((StatusCode::NOT_FOUND, "").into_response())
+            }
+        }
+
+        tracing::info!("Adding 404 fallback route");
+        let router = router.fallback(fallback_handler);
         Ok(router)
     }
 

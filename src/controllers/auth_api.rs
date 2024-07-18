@@ -8,7 +8,7 @@ use crate::{
         _entities::users,
         users::{LoginParams, RegisterParams},
     },
-    views::auth::LoginResponse,
+    views::auth_api::LoginResponse,
 };
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VerifyParams {
