@@ -5,47 +5,77 @@ use loco_rs::{
     Error, Result,
 };
 use minijinja::{path_loader, Environment};
+#[cfg(debug_assertions)]
+use minijinja_autoreload::AutoReloader;
 use serde::Serialize;
+use std::{path::PathBuf, sync::Arc};
 
 #[derive(Clone)]
 pub struct MiniJinjaView {
-    env: Environment<'static>,
+    #[cfg(debug_assertions)]
+    reloader: Arc<AutoReloader>,
+    #[cfg(not(debug_assertions))]
+    env: Arc<Environment<'static>>,
 }
 
 impl MiniJinjaView {
+    #[cfg(debug_assertions)]
     fn new() -> Self {
-        // TODO statically load templates in production?
+        let reloader = AutoReloader::new(move |notifier| {
+            let template_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("assets/views");
+            let mut env = Environment::new();
+            env.set_loader(path_loader(&template_path));
+            notifier.watch_path(&template_path, true);
+            notifier.set_fast_reload(true);
+            Ok(env)
+        });
+
+        Self {
+            reloader: Arc::new(reloader),
+        }
+    }
+
+    #[cfg(not(debug_assertions))]
+    fn new() -> Self {
+        // TODO statically embed templates in production?
         // https://github.com/mitsuhiko/minijinja/blob/main/examples/embedding/src/main.rs
 
-        // TODO Autoreload in development - why does autoreload seem to be working already?
-        // Look at https://docs.rs/minijinja-autoreload/latest/minijinja_autoreload/
+        let template_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("assets/views");
         let mut env = Environment::new();
-        env.set_loader(path_loader("assets/views"));
+        env.set_loader(path_loader(&template_path));
+        Self { env: Arc::new(env) }
+    }
+}
 
-        Self { env }
+fn render<S: Serialize>(env: &Environment<'static>, key: &str, data: S) -> Result<String> {
+    if let Some((key, block)) = key.split_once(':') {
+        let tmpl = env.get_template(key).map_err(|e| Error::Anyhow(e.into()))?;
+
+        tmpl.eval_to_state(data)
+            .map_err(|e| Error::Anyhow(e.into()))?
+            .render_block(block)
+            .map_err(|e| Error::Anyhow(e.into()))
+    } else {
+        let tmpl = env.get_template(key).map_err(|e| Error::Anyhow(e.into()))?;
+
+        tmpl.render(data).map_err(|e| Error::Anyhow(e.into()))
     }
 }
 
 impl ViewRenderer for MiniJinjaView {
+    #[cfg(debug_assertions)]
     fn render<S: Serialize>(&self, key: &str, data: S) -> Result<String> {
-        if let Some((key, block)) = key.split_once(':') {
-            let tmpl = self
-                .env
-                .get_template(key)
-                .map_err(|e| Error::Anyhow(e.into()))?;
+        let env = self
+            .reloader
+            .acquire_env()
+            .map_err(|e| Error::Anyhow(e.into()))?;
 
-            tmpl.eval_to_state(data)
-                .map_err(|e| Error::Anyhow(e.into()))?
-                .render_block(block)
-                .map_err(|e| Error::Anyhow(e.into()))
-        } else {
-            let tmpl = self
-                .env
-                .get_template(key)
-                .map_err(|e| Error::Anyhow(e.into()))?;
+        render(&env, key, data)
+    }
 
-            tmpl.render(data).map_err(|e| Error::Anyhow(e.into()))
-        }
+    #[cfg(not(debug_assertions))]
+    fn render<S: Serialize>(&self, key: &str, data: S) -> Result<String> {
+        render(&self.env, key, data)
     }
 }
 
