@@ -5,16 +5,16 @@ use axum::{
 };
 use loco_rs::prelude::*;
 
-use crate::initializers::minijinja_view_engine::MiniJinjaView;
+use crate::{initializers::minijinja_view_engine::MiniJinjaView, views};
 
 pub async fn root(ViewEngine(v): ViewEngine<MiniJinjaView>) -> Result<impl IntoResponse> {
     let random = crate::models::index::random_string();
-    crate::views::index::root(&v, &random)
+    views::index::root(&v, &random)
 }
 
 async fn not_found(method: Method, ViewEngine(v): ViewEngine<MiniJinjaView>) -> Result<Response> {
     if method == Method::GET {
-        crate::views::index::not_found(&v)
+        views::index::not_found(&v)
     } else {
         Ok((StatusCode::NOT_FOUND, "").into_response())
     }
