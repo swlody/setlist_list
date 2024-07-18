@@ -58,7 +58,9 @@ impl Hooks for App {
     fn routes(_ctx: &AppContext) -> AppRoutes {
         AppRoutes::with_default_routes()
             .add_route(controllers::auth::routes())
-            .add_route(controllers::user::routes())
+            .add_route(controllers::index::routes())
+            .add_route(controllers::auth_api::routes())
+            .add_route(controllers::user_api::routes())
     }
 
     async fn after_routes(router: Router, _ctx: &AppContext) -> Result<Router> {

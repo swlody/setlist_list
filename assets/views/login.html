@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Main page{% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  {% block body %}
+    <h1>Login page!</h1>
+  {% endblock %}
+{% endblock %}
