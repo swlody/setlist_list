@@ -468,7 +468,6 @@ dependencies = [
  "mime",
  "pin-project-lite",
  "serde",
- "serde_html_form",
  "tower",
  "tower-layer",
  "tower-service",
@@ -3700,19 +3699,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_html_form"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8de514ef58196f1fc96dcaef80fe6170a1ce6215df9687a93fe8300e773fefc5"
-dependencies = [
- "form_urlencoded",
- "indexmap",
- "itoa",
- "ryu",
- "serde",
-]
-
-[[package]]
 name = "serde_json"
 version = "1.0.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3808,7 +3794,6 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "axum",
- "axum-extra",
  "chrono",
  "eyre",
  "include_dir",
@@ -3824,11 +3809,7 @@ dependencies = [
  "serde_json",
  "serial_test",
  "tokio",
- "tower",
- "tower-http",
- "tower-layer",
  "tracing",
- "tracing-subscriber",
  "uuid",
  "validator",
 ]
