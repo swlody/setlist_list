@@ -14,7 +14,6 @@ use crate::{
         _entities::users,
         users::{LoginParams, RegisterParams},
     },
-    views::auth_api::LoginResponse,
 };
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VerifyParams {
@@ -158,13 +157,36 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
         .same_site(cookie::SameSite::Lax)
         .build()
         .to_string();
+    let cookie_header = HeaderValue::from_str(&cookie)?;
 
-    let login_response = LoginResponse::new(&user);
-    let mut response = axum::Json(login_response).into_response();
-    response
-        .headers_mut()
-        .insert(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);
+    let response = Response::builder()
+        .header("HX-Redirect", "/")
+        .header(header::SET_COOKIE, cookie_header)
+        .body("".into())?;
+    Ok(response)
+}
 
+#[debug_handler]
+async fn logout(_auth: auth::JWT, State(_ctx): State<AppContext>) -> Result<Response> {
+    let now = SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_secs();
+    let jwt_expiration = i64::try_from(now + 10).unwrap();
+    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration).unwrap();
+
+    let cookie = CookieBuilder::new("token", "deleted")
+        .path("/")
+        .expires(expiry_time)
+        .same_site(cookie::SameSite::None)
+        .build()
+        .to_string();
+    let cookie_header = HeaderValue::from_str(&cookie)?;
+
+    let response = Response::builder()
+        .header("HX-Redirect", "/")
+        .header(header::SET_COOKIE, cookie_header)
+        .body("".into())?;
     Ok(response)
 }
 
@@ -176,4 +198,5 @@ pub fn routes() -> Routes {
         .add("/login", post(login))
         .add("/forgot", post(forgot))
         .add("/reset", post(reset))
+        .add("/logout", post(logout))
 }

@@ -10,7 +10,7 @@
     <title>{% block title %}{% endblock %} - SetListList</title>
   </head>
 
-  <body>
+  <body id="body">
     <header>
       {% block header %}
         <div class="navbar bg-base-100">
@@ -60,6 +60,7 @@
               <a class="btn" href="login">Login</a>
             {% else %}
               {{ username }}
+              <a class="btn" hx-post="api/auth/logout">Logout</a>
             {% endif %}
           </div>
         </div>

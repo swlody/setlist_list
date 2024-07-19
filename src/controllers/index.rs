@@ -1,11 +1,17 @@
 #![allow(clippy::unused_async)]
 use loco_rs::prelude::*;
 
-use crate::{initializers::minijinja_view_engine::MiniJinjaView, views};
+use crate::{
+    initializers::minijinja_view_engine::MiniJinjaView, models::users, utils::get_user_name, views,
+};
 
-pub async fn root(ViewEngine(v): ViewEngine<MiniJinjaView>) -> Result<impl IntoResponse> {
+pub async fn root(
+    jwt_user: Option<auth::JWTWithUser<users::Model>>,
+    ViewEngine(v): ViewEngine<MiniJinjaView>,
+) -> Result<impl IntoResponse> {
     let random = crate::models::index::random_string();
-    views::index::root(&v, &random)
+    let user_name = get_user_name(jwt_user);
+    views::index::root(&v, &random, &user_name)
 }
 
 pub fn routes() -> Routes {
