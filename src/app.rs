@@ -24,7 +24,9 @@ use crate::{
     controllers,
     initializers::{self, minijinja_view_engine::MiniJinjaView},
     models::_entities::users,
-    tasks, views,
+    tasks,
+    utils::get_user_name,
+    views,
     workers::downloader::DownloadWorker,
 };
 
@@ -63,22 +65,25 @@ impl Hooks for App {
             .add_route(controllers::user_api::routes())
     }
 
-    async fn after_routes(router: Router, _ctx: &AppContext) -> Result<Router> {
+    fn router(ctx: &AppContext) -> Result<Router> {
         async fn fallback_handler(
+            jwt_user: Option<auth::JWTWithUser<users::Model>>,
             ViewEngine(v): ViewEngine<MiniJinjaView>,
             uri: OriginalUri,
             method: Method,
         ) -> impl IntoResponse {
             tracing::debug!("Returning 404 for {} on {}", method, uri.path());
+
+            let user_name = get_user_name(jwt_user);
             if method == Method::GET {
-                views::index::not_found(&v)
+                views::index::not_found(&v, &user_name)
             } else {
                 Ok((StatusCode::NOT_FOUND, "").into_response())
             }
         }
 
-        tracing::info!("Adding 404 fallback route");
-        let router = router.fallback(fallback_handler);
+        let router = Router::new().fallback(fallback_handler);
+        let router = Self::routes(ctx).to_router(ctx.clone(), router)?;
         Ok(router)
     }
 

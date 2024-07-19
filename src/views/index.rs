@@ -9,8 +9,12 @@ pub fn root(v: &impl ViewRenderer, random: &str, user_name: &str) -> Result<impl
     )
 }
 
-pub fn not_found(v: &impl ViewRenderer) -> Result<Response> {
+pub fn not_found(v: &impl ViewRenderer, user_name: &str) -> Result<Response> {
     format::render()
         .status(axum::http::StatusCode::NOT_FOUND)
-        .view(v, "404.html", json!({"some": "value", "username": ""}))
+        .view(
+            v,
+            "404.html",
+            json!({"some": "value", "username": user_name}),
+        )
 }
