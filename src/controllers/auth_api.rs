@@ -1,4 +1,10 @@
-use axum::debug_handler;
+use std::time::SystemTime;
+
+use ::cookie::CookieBuilder;
+use axum::{
+    debug_handler,
+    http::{header, HeaderValue},
+};
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -136,7 +142,30 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
         .generate_jwt(&jwt_secret.secret, &jwt_secret.expiration)
         .or_else(|_| unauthorized("unauthorized!"))?;
 
-    format::json(LoginResponse::new(&user, &token))
+    // TODO remove unwraps (should never fail but still)
+    let now = SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_secs();
+    let jwt_expiration = i64::try_from(now + jwt_secret.expiration).unwrap();
+    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration).unwrap();
+
+    let cookie = CookieBuilder::new("token", token)
+        .path("/")
+        .expires(expiry_time)
+        .http_only(true)
+        .secure(true)
+        .same_site(cookie::SameSite::Lax)
+        .build()
+        .to_string();
+
+    let login_response = LoginResponse::new(&user);
+    let mut response = axum::Json(login_response).into_response();
+    response
+        .headers_mut()
+        .insert(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);
+
+    Ok(response)
 }
 
 pub fn routes() -> Routes {

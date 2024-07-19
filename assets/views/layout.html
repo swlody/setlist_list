@@ -21,11 +21,17 @@
           </div>
 
           <div class="navbar-end">
-            {# TODO - store the theme state in localstorage
-            https://alpinejs.dev/plugins/persist #}
             <label class="swap swap-rotate mr-2">
               <!-- this hidden checkbox controls the state -->
-              <input type="checkbox" class="theme-controller" value="dark" />
+              {# TODO avoid animating moon icon on page change #}
+              <input
+                type="checkbox"
+                class="theme-controller"
+                x-data="{ dark_theme_checked: $persist(false) }"
+                x-on:click="dark_theme_checked = !dark_theme_checked"
+                :checked="dark_theme_checked"
+                value="dark"
+              />
 
               <!-- sun icon -->
               <svg

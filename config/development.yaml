@@ -137,4 +137,7 @@ auth:
     secret: BxkJ9jcJ3jllEhWQhYwx
     # Token expiration time in seconds
     expiration: 604800 # 7 days
+    location:
+      from: Cookie
+      name: token
 

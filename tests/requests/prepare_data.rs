@@ -1,6 +1,6 @@
-use axum::http::{HeaderName, HeaderValue};
+use axum::http::{header, HeaderName, HeaderValue};
 use loco_rs::{app::AppContext, TestServer};
-use setlist_list::{models::users, views::auth_api::LoginResponse};
+use setlist_list::models::users;
 
 const USER_EMAIL: &str = "test@loco.com";
 const USER_PASSWORD: &str = "1234";
@@ -40,13 +40,26 @@ pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedIn
         }))
         .await;
 
-    let login_response: LoginResponse = serde_json::from_str(&response.text()).unwrap();
+    // TODO clean this up you maniac
+    let token = response
+        .headers()
+        .get(header::SET_COOKIE)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .split_once("=")
+        .unwrap()
+        .1
+        .split_once(";")
+        .unwrap()
+        .0
+        .to_string();
 
     LoggedInUser {
         user: users::Model::find_by_email(&ctx.db, USER_EMAIL)
             .await
             .unwrap(),
-        token: login_response.token,
+        token: token,
     }
 }
 
