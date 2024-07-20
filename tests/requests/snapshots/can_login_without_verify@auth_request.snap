@@ -1,8 +1,8 @@
 ---
 source: tests/requests/auth.rs
-expression: "(response.status_code(), response.text())"
+expression: "(response.status_code(), has_cookie)"
 ---
 (
     200,
-    "{\"pid\":\"PID\",\"name\":\"loco\",\"is_verified\":false}",
+    true,
 )

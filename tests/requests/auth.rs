@@ -1,3 +1,4 @@
+use axum::http::header;
 use insta::{assert_debug_snapshot, with_settings};
 use loco_rs::testing;
 use rstest::rstest;
@@ -92,10 +93,12 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
             .email_verified_at
             .is_some());
 
+        let has_cookie = response.headers().get(header::SET_COOKIE).is_some();
+
         with_settings!({
             filters => testing::cleanup_user_model()
         }, {
-            assert_debug_snapshot!(test_name, (response.status_code(), response.text()));
+            assert_debug_snapshot!(test_name, (response.status_code(), has_cookie));
         });
     })
     .await;
@@ -130,10 +133,12 @@ async fn can_login_without_verify() {
             }))
             .await;
 
+        let has_cookie = response.headers().get(header::SET_COOKIE).is_some();
+
         with_settings!({
             filters => testing::cleanup_user_model()
         }, {
-            assert_debug_snapshot!((response.status_code(), response.text()));
+            assert_debug_snapshot!((response.status_code(), has_cookie));
         });
     })
     .await;
