@@ -1,10 +1,7 @@
 use std::time::SystemTime;
 
 use ::cookie::CookieBuilder;
-use axum::{
-    debug_handler,
-    http::{header, HeaderValue},
-};
+use axum::debug_handler;
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +11,7 @@ use crate::{
         _entities::users,
         users::{LoginParams, RegisterParams},
     },
+    utils::{hx_redirect, hx_redirect_with_cookies},
 };
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VerifyParams {
@@ -59,7 +57,7 @@ async fn register(
 
     AuthMailer::send_welcome(&ctx, &user).await?;
 
-    format::json(())
+    hx_redirect("/")
 }
 
 /// Verify register user. if the user not verified his email, he can't login to
@@ -94,7 +92,7 @@ async fn forgot(
     let Ok(user) = users::Model::find_by_email(&ctx.db, &params.email).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
-        return format::json(());
+        return hx_redirect("/login");
     };
 
     let user = user
@@ -104,7 +102,7 @@ async fn forgot(
 
     AuthMailer::forgot_password(&ctx, &user).await?;
 
-    format::json(())
+    hx_redirect("/login")
 }
 
 /// reset user password by the given parameters
@@ -155,15 +153,9 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
         .http_only(true)
         .secure(true)
         .same_site(cookie::SameSite::Lax)
-        .build()
-        .to_string();
-    let cookie_header = HeaderValue::from_str(&cookie)?;
+        .build();
 
-    let response = Response::builder()
-        .header("HX-Redirect", "/")
-        .header(header::SET_COOKIE, cookie_header)
-        .body("".into())?;
-    Ok(response)
+    hx_redirect_with_cookies("/", &[cookie])
 }
 
 #[debug_handler]
@@ -179,15 +171,9 @@ async fn logout(_auth: auth::JWT, State(_ctx): State<AppContext>) -> Result<Resp
         .path("/")
         .expires(expiry_time)
         .same_site(cookie::SameSite::None)
-        .build()
-        .to_string();
-    let cookie_header = HeaderValue::from_str(&cookie)?;
+        .build();
 
-    let response = Response::builder()
-        .header("HX-Redirect", "/")
-        .header(header::SET_COOKIE, cookie_header)
-        .body("".into())?;
-    Ok(response)
+    hx_redirect_with_cookies("/", &[cookie])
 }
 
 pub fn routes() -> Routes {

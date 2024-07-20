@@ -11,16 +11,16 @@
         <div
           id="login-container"
           class="h-3/5 w-1/2"
-          x-data="{ register: false }"
+          x-data="{ form: 'login' }"
         >
           <form
-            id="login-form"
-            x-show="!register"
+            id="forgot-password-form"
+            x-show="form == 'forgot'"
             class="w-full space-y-4"
-            hx-post="api/auth/login"
+            hx-post="api/auth/forgot"
             hx-ext="json-enc"
           >
-            {% block login_items %}
+            {% block email_label %}
               <label class="input input-bordered flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -42,6 +42,21 @@
                   placeholder="Email"
                 />
               </label>
+            {% endblock %}
+            <button type="submit" class="btn btn-block">
+              Send reset email
+            </button>
+          </form>
+
+          <form
+            id="login-form"
+            x-show="form == 'login'"
+            class="w-full space-y-4"
+            hx-post="api/auth/login"
+            hx-ext="json-enc"
+          >
+            {% block login_labels %}
+              {{ self.email_label() }}
 
               <label class="input input-bordered flex items-center gap-2">
                 <svg
@@ -69,8 +84,8 @@
           </form>
 
           <form
-            id="login-form"
-            x-show="register"
+            id="register-form"
+            x-show="form == 'register'"
             class="w-full space-y-4"
             hx-post="api/auth/register"
             hx-ext="json-enc"
@@ -86,26 +101,30 @@
                   d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"
                 />
               </svg>
-              <input type="text" class="grow" placeholder="Username" />
+              <input type="text" class="grow" name="name" placeholder="Name" />
             </label>
 
-            {{ self.login_items() }}
+            {{ self.login_labels() }}
             <button type="submit" class="btn btn-block">Register</button>
           </form>
 
           <div id="account-stuff" class="flex justify-around">
-            <div x-show="!register">
-              <a class="link link-accent" x-on:click="register = true">
-                Create an account
-              </a>
-            </div>
-            <div x-show="register">
+            <div x-show="form != 'login'">
               Already have an account?
-              <a class="link link-accent" x-on:click="register = false">
+              <a class="link link-accent" x-on:click="form = 'login'">
                 Login
               </a>
             </div>
-            <a class="link link-accent" x-show="!register">
+            <div x-show="form != 'register'">
+              <a class="link link-accent" x-on:click="form = 'register'">
+                Create an account
+              </a>
+            </div>
+            <a
+              class="link link-accent"
+              x-show="form != 'forgot'"
+              x-on:click="form = 'forgot'"
+            >
               Forgot password?
             </a>
           </div>
