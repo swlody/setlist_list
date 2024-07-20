@@ -9,7 +9,7 @@ pub async fn login(
     jwt_user: Option<auth::JWTWithUser<users::Model>>,
     ViewEngine(v): ViewEngine<MiniJinjaView>,
 ) -> Result<impl IntoResponse> {
-    let user_name = get_user_name(jwt_user);
+    let user_name = get_user_name(jwt_user).unwrap_or_default();
     views::auth::login(&v, &user_name)
 }
 

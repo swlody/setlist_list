@@ -74,7 +74,7 @@ impl Hooks for App {
         ) -> impl IntoResponse {
             tracing::debug!("Returning 404 for {} on {}", method, uri.path());
 
-            let user_name = get_user_name(jwt_user);
+            let user_name = get_user_name(jwt_user).unwrap_or_default();
             if method == Method::GET {
                 views::index::not_found(&v, &user_name)
             } else {

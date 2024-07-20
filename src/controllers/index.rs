@@ -10,7 +10,7 @@ pub async fn root(
     ViewEngine(v): ViewEngine<MiniJinjaView>,
 ) -> Result<impl IntoResponse> {
     let random = crate::models::index::random_string();
-    let user_name = get_user_name(jwt_user);
+    let user_name = get_user_name(jwt_user).unwrap_or_default();
     views::index::root(&v, &random, &user_name)
 }
 
