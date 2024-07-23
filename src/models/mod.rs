@@ -1,3 +1,3 @@
 pub mod _entities;
-pub mod index;
+pub mod sets;
 pub mod users;

@@ -6,12 +6,9 @@
 {% block content %}
   {{ super() }}
   {% block body %}
-    <img src="/static/image.png" width="200" />
-    <br />
-    <h2>SetListList</h2>
-    <h1 class="bg-slate-950 text-yellow-300">{{ random }}</h1>
-    <br />
-    <br />
-    {{ some }}
+    {% if username != "" %}
+      <a class="btn" href="/sets/new">Create new set</a>
+      <a class="btn" href="/sets">View sets</a>
+    {% endif %}
   {% endblock %}
 {% endblock %}

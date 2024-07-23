@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block title %}Main page{% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  {% block body %}
+    <div class="prose p-10">
+      <h1>View sets: {{ item.id }}</h1>
+      <div class="mb-10">
+        <div>
+          <label
+            ><b>{{ "band_name" | capitalize }}:</b> {{ item.band_name }}</label
+          >
+        </div>
+        <div>
+          <label><b>{{ "date" | capitalize }}:</b> {{ item.date }}</label>
+        </div>
+        <div>
+          <label><b>{{ "venue" | capitalize }}:</b> {{ item.venue }}</label>
+        </div>
+        <div>
+          <label><b>{{ "setlist" | capitalize }}:</b> {{ item.setlist }}</label>
+        </div>
+        <br />
+        <a href="/sets">Back to sets</a>
+      </div>
+    </div>
+  {% endblock %}
+{% endblock %}

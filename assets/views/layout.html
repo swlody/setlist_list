@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
     <!-- <script src="https://cdn.tailwindcss.com"></script> -->
-    <link href="static/dist/output.css" rel="stylesheet" />
+    <link href="/static/dist/output.css" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="static/dist/main.js" defer></script>
+    <script src="/static/dist/main.js" defer></script>
     <title>{% block title %}{% endblock %} - SetListList</title>
   </head>
 
   <body id="body">
     <header>
       {% block header %}
-        <div class="navbar bg-base-100">
+        <div class="navbar bg-base-300">
           <div class="navbar-start"></div>
 
           <div class="navbar-center">
@@ -26,7 +26,7 @@
               {# TODO avoid animating moon icon on page change #}
               <input
                 type="checkbox"
-                class="theme-controller"
+                class="theme-controller invisible"
                 x-data="{ dark_theme_checked: $persist(false) }"
                 x-on:click="dark_theme_checked = !dark_theme_checked"
                 :checked="dark_theme_checked"
@@ -68,10 +68,14 @@
     </header>
     <div id="content">
       {% block content %}
-        <h1 class="text-3xl font-bold text-blue-300">SetListList</h1>
+        {# content #}
       {% endblock %}
     </div>
 
-    <footer>Copyright 2024 Sam Wlody</footer>
+    <footer class="footer footer-center bg-base-300 p-4 text-base-content">
+      <aside>
+        <p>Copyright © 2024 - Sam Wlody</p>
+      </aside>
+    </footer>
   </body>
 </html>

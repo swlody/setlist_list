@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% block title %}Main page{% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  {% block body %}
+    <div class="prose p-10">
+      <h1>Edit sets: {{ item.id }}</h1>
+      <div class="mb-10">
+        <form
+          hx-post="/sets/{{ item.id }}"
+          hx-ext="json-enc"
+          hx-target="#success-message"
+        >
+          <div class="mb-5">
+            <div>
+              <label>band_name</label>
+              <br />
+              <input
+                id="band_name"
+                name="band_name"
+                type="text"
+                value="{{ item.band_name }}"
+              />
+            </div>
+            <div>
+              <label>date</label>
+              <input
+                id="date"
+                name="date"
+                type="date"
+                value="{{ item.date }}"
+              />
+              <br />
+            </div>
+            <div>
+              <label>venue</label>
+              <br />
+              <input
+                id="venue"
+                name="venue"
+                type="text"
+                value="{{ item.venue }}"
+              />
+            </div>
+            <div>
+              <label>setlist</label>
+              <br />
+              <textarea id="setlist" name="setlist" type="text">
+{{ item.setlist }}</textarea
+              >
+            </div>
+            <div>
+              <div class="mt-5">
+                <button
+                  class="rounded-lg bg-gray-900 px-6 py-3 text-xs text-white"
+                  type="submit"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+        <!-- Open the modal using ID.showModal() method -->
+        <button
+          class="btn bg-red-600 px-6 py-3 text-xs text-white"
+          onclick="delete_modal.showModal()"
+        >
+          Delete
+        </button>
+        <dialog id="delete_modal" class="modal">
+          <div class="modal-box">
+            <h3 class="text-lg font-bold">Delete</h3>
+            <p class="py-4">Press ESC key or click the button below to close</p>
+            <div class="modal-action">
+              <form method="dialog">
+                <!-- if there is a button in form, it will close the modal -->
+                <button class="btn">Close</button>
+                <button
+                  class="btn bg-red-600 px-6 py-3 text-xs text-white"
+                  hx-delete="/sets/{{ item.id }}"
+                >
+                  Confirm delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </dialog>
+        <div id="success-message" class="mt-4"></div>
+        <br />
+        <a href="/sets">Back to sets</a>
+      </div>
+    </div>
+  {% endblock %}
+{% endblock %}

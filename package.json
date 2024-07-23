@@ -1,13 +1,17 @@
 {
   "devDependencies": {
-    "@alpinejs/persist": "^3.14.1",
     "alpinejs": "^3.14.1",
+    "@alpinejs/persist": "^3.14.1",
     "daisyui": "^4.12.10",
     "htmx.org": "^2.0.1",
     "prettier": "^3.3.3",
     "prettier-plugin-jinja-template": "^1.4.1",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.4",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "@tailwindcss/typography": "^0.5.13",
     "webpack-cli": "^5.1.4"
   }
 }
