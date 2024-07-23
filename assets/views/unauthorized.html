@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
-{% block title %}Not Found{% endblock %}
+{% block title %}Unauthorized{% endblock %}
 {% block header %}
   {{ super() }}
 {% endblock %}
 {% block content %}
   {{ super() }}
   <img src="/static/image.png" width="200" />
-  <b>404 Not found!!</b>
+  <b>You must be logged in to view this page.</b>
 {% endblock %}

@@ -45,11 +45,11 @@ pub async fn list(
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
+    let user_name = get_user_name(jwt_user).unwrap_or_default();
     let item = Entity::find()
         .order_by(Column::Id, Order::Desc)
         .all(&ctx.db)
         .await;
-    let user_name = get_user_name(jwt_user).unwrap_or_default();
     if let Ok(item) = item {
         views::sets::list(&v, &item, &user_name)
     } else {
@@ -64,7 +64,11 @@ pub async fn new(
     State(_ctx): State<AppContext>,
 ) -> Result<Response> {
     let user_name = get_user_name(jwt_user).unwrap_or_default();
-    views::sets::create(&v, &user_name)
+    if user_name.is_empty() {
+        views::index::unauthorized(&v)
+    } else {
+        views::sets::create(&v, &user_name)
+    }
 }
 
 #[debug_handler]
@@ -87,26 +91,34 @@ pub async fn edit(
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
-    let item = load_item(&ctx, id).await;
     let user_name = get_user_name(jwt_user).unwrap_or_default();
-    if let Ok(item) = item {
-        views::sets::edit(&v, &item, &user_name)
+    if user_name.is_empty() {
+        views::index::unauthorized(&v)
     } else {
-        views::index::not_found(&v, &user_name)
+        let item = load_item(&ctx, id).await;
+        if let Ok(item) = item {
+            views::sets::edit(&v, &item, &user_name)
+        } else {
+            views::index::not_found(&v, &user_name)
+        }
     }
 }
 
 #[debug_handler]
 pub async fn show(
     jwt_user: Option<JWTWithUser<users::Model>>,
-    Path(id): Path<i32>,
+    path: Option<Path<i32>>,
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
-    let item = load_item(&ctx, id).await;
     let user_name = get_user_name(jwt_user).unwrap_or_default();
-    if let Ok(item) = item {
-        views::sets::show(&v, &item, &user_name)
+    if let Some(Path(id)) = path {
+        let item = load_item(&ctx, id).await;
+        if let Ok(item) = item {
+            views::sets::show(&v, &item, &user_name)
+        } else {
+            views::index::not_found(&v, &user_name)
+        }
     } else {
         views::index::not_found(&v, &user_name)
     }

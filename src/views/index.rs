@@ -1,3 +1,4 @@
+use axum::http::StatusCode;
 use loco_rs::prelude::*;
 use serde_json::json;
 
@@ -6,11 +7,15 @@ pub fn root(v: &impl ViewRenderer, user_name: &str) -> Result<impl IntoResponse>
 }
 
 pub fn not_found(v: &impl ViewRenderer, user_name: &str) -> Result<Response> {
+    format::render().status(StatusCode::NOT_FOUND).view(
+        v,
+        "404.html",
+        json!({"username": user_name}),
+    )
+}
+
+pub fn unauthorized(v: &impl ViewRenderer) -> Result<Response> {
     format::render()
-        .status(axum::http::StatusCode::NOT_FOUND)
-        .view(
-            v,
-            "404.html",
-            json!({"some": "value", "username": user_name}),
-        )
+        .status(StatusCode::UNAUTHORIZED)
+        .view(v, "unauthorized.html", json!({}))
 }
