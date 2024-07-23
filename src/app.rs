@@ -65,7 +65,7 @@ impl Hooks for App {
             .add_route(controllers::user_api::routes())
     }
 
-    fn router(ctx: &AppContext) -> Result<Router> {
+    async fn before_routes(_ctx: &AppContext) -> Result<Router<AppContext>> {
         async fn fallback_handler(
             jwt_user: Option<auth::JWTWithUser<users::Model>>,
             ViewEngine(v): ViewEngine<MiniJinjaView>,
@@ -83,7 +83,6 @@ impl Hooks for App {
         }
 
         let router = Router::new().fallback(fallback_handler);
-        let router = Self::routes(ctx).to_router(ctx.clone(), router)?;
         Ok(router)
     }
 
