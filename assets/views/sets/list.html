@@ -7,36 +7,25 @@
   {{ super() }}
   {% block body %}
     <div class="prose p-10">
-      <h1>sets</h1>
-      <div class="mb-10">
-        {% for item in items %}
-          <div class="mb-5">
-            <div>
-              <label
-                ><b>{{ "band_name" | capitalize }}:</b>
-                {{ item.band_name }}</label
-              >
-            </div>
-            <div>
-              <label><b>{{ "date" | capitalize }}:</b> {{ item.date }}</label>
-            </div>
-            <div>
-              <label><b>{{ "venue" | capitalize }}:</b> {{ item.venue }}</label>
-            </div>
-            <div>
-              <label
-                ><b>{{ "setlist" | capitalize }}:</b> {{ item.setlist }}</label
-              >
-            </div>
-            <a href="/sets/{{ item.id }}/edit">Edit</a>
-            <a href="/sets/{{ item.id }}">View</a>
-          </div>
-        {% endfor %}
+      <h1>Sets</h1>
+      {% for item in items %}
+        <div>
+          <label><b>Band name:</b> {{ item.band_name }}</label>
+          <br />
+          <label><b>Date:</b> {{ item.date }}</label>
+          <br />
+          <label><b>Venue:</b> {{ item.venue }}</label>
+          <br />
+          <label><b>Setlist:</b> {{ item.setlist }}</label>
+          <br />
+          <a href="/sets/{{ item.id }}/edit">Edit</a>
+          <a href="/sets/{{ item.id }}">View</a>
+        </div>
+      {% endfor %}
 
-        <br />
-        <br />
-        <a href="/sets/new">New set</a>
-      </div>
+      <br />
+      <br />
+      <a href="/sets/new">New set</a>
     </div>
   {% endblock %}
 {% endblock %}

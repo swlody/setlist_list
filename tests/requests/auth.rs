@@ -31,7 +31,7 @@ async fn can_register() {
             "password": "12341234"
         });
 
-        let _response = request.post("/api/auth/register").json(&payload).await;
+        let _response = request.post("/register").json(&payload).await;
         let saved_user = users::Model::find_by_email(&ctx.db, email).await;
 
         with_settings!({
@@ -66,20 +66,17 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
         });
 
         //Creating a new user
-        _ = request
-            .post("/api/auth/register")
-            .json(&register_payload)
-            .await;
+        _ = request.post("/register").json(&register_payload).await;
 
         let user = users::Model::find_by_email(&ctx.db, email).await.unwrap();
         let verify_payload = serde_json::json!({
             "token": user.email_verification_token,
         });
-        request.post("/api/auth/verify").json(&verify_payload).await;
+        request.post("/verify").json(&verify_payload).await;
 
         //verify user request
         let response = request
-            .post("/api/auth/login")
+            .post("/login")
             .json(&serde_json::json!({
                 "email": email,
                 "password": password
@@ -119,14 +116,11 @@ async fn can_login_without_verify() {
         });
 
         //Creating a new user
-        _ = request
-            .post("/api/auth/register")
-            .json(&register_payload)
-            .await;
+        _ = request.post("/register").json(&register_payload).await;
 
         //verify user request
         let response = request
-            .post("/api/auth/login")
+            .post("/login")
             .json(&serde_json::json!({
                 "email": email,
                 "password": password
@@ -155,7 +149,7 @@ async fn can_reset_password() {
         let forgot_payload = serde_json::json!({
             "email": login_data.user.email,
         });
-        _ = request.post("/api/auth/forgot").json(&forgot_payload).await;
+        _ = request.post("/forgot").json(&forgot_payload).await;
 
         let user = users::Model::find_by_email(&ctx.db, &login_data.user.email)
             .await
@@ -169,7 +163,7 @@ async fn can_reset_password() {
             "password": new_password,
         });
 
-        let reset_response = request.post("/api/auth/reset").json(&reset_payload).await;
+        let reset_response = request.post("/reset").json(&reset_payload).await;
 
         let user = users::Model::find_by_email(&ctx.db, &user.email)
             .await
@@ -181,7 +175,7 @@ async fn can_reset_password() {
         assert_debug_snapshot!((reset_response.status_code(), reset_response.text()));
 
         let response = request
-            .post("/api/auth/login")
+            .post("/login")
             .json(&serde_json::json!({
                 "email": user.email,
                 "password": new_password

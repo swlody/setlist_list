@@ -12,13 +12,7 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [
-    require("daisyui"),
-    require("@tailwindcss/forms"),
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/aspect-ratio"),
-    require("@tailwindcss/line-clamp"),
-  ],
+  plugins: [require("daisyui"), require("@tailwindcss/typography")],
   daisyui: {
     themes: ["light", "dark"],
   },

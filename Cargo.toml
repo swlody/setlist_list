@@ -32,6 +32,7 @@ minijinja = { version = "2.0.3", features = ["loader", "speedups"] }
 minijinja-autoreload = "2.0.3"
 rand = "0.8.5"
 time = "0.3.36"
+axum-htmx = "0.6.0"
 
 [[bin]]
 name = "setlist_list-cli"

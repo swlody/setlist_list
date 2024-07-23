@@ -7,48 +7,40 @@
   {{ super() }}
   {% block body %}
     <div class="prose p-10">
-      <div class="mb-10">
-        <form hx-post="/sets" hx-ext="json-enc">
-          <h1>Create new sets</h1>
-          <div class="mb-5">
-            <div>
-              <label>band_name</label>
-              <br />
-              <input id="band_name" name="band_name" type="text" value="" />
-            </div>
-            <div>
-              <label>date</label>
-              <input id="date" name="date" type="date" value="" />
-              <br />
-            </div>
-            <div>
-              <label>venue</label>
-              <br />
-              <input id="venue" name="venue" type="text" value="" />
-            </div>
-            <div>
-              <label>setlist</label>
-              <br />
-              <textarea
-                id="setlist"
-                name="setlist"
-                type="text"
-                value=""
-                rows="10"
-                cols="50"
-              ></textarea>
-            </div>
-          </div>
-          <div>
-            <button
-              class="rounded-lg bg-gray-900 px-6 py-3 text-xs text-white"
-              type="submit"
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-      </div>
+      <form hx-post="/sets" hx-ext="json-enc">
+        <h1>Create new set</h1>
+        <div>
+          <input
+            type="text"
+            placeholder="Band name"
+            name="band_name"
+            class="input input-bordered w-full max-w-xs"
+          />
+          <input
+            id="date"
+            name="date"
+            type="date"
+            class="input input-bordered w-full max-w-xs"
+            value=""
+          />
+          <input
+            type="text"
+            placeholder="Venue"
+            name="venue"
+            class="input input-bordered w-full max-w-xs"
+          />
+          <br />
+          {# TODO actually flex this #}
+          <textarea
+            cols="29"
+            class="textarea textarea-bordered w-full max-w-xs"
+            placeholder="Setlist"
+          ></textarea>
+        </div>
+        <div>
+          <button class="btn" type="submit">Submit</button>
+        </div>
+      </form>
     </div>
   {% endblock %}
 {% endblock %}

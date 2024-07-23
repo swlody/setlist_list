@@ -2,7 +2,7 @@
 #![allow(clippy::unnecessary_struct_initialization)]
 #![allow(clippy::unused_async)]
 use auth::JWTWithUser;
-use axum::debug_handler;
+use axum::{debug_handler, http::uri::PathAndQuery};
 use loco_rs::prelude::*;
 use sea_orm::{sea_query::Order, QueryOrder};
 use serde::{Deserialize, Serialize};
@@ -13,7 +13,7 @@ use crate::{
         _entities::sets::{ActiveModel, Column, Entity, Model},
         users,
     },
-    utils::get_user_name,
+    utils::{get_user_name, hx_redirect},
     views,
 };
 
@@ -114,8 +114,7 @@ pub async fn show(
 
 #[debug_handler]
 pub async fn add(
-    jwt_user: Option<JWTWithUser<users::Model>>,
-    ViewEngine(v): ViewEngine<MiniJinjaView>,
+    _auth: auth::JWT,
     State(ctx): State<AppContext>,
     Json(params): Json<Params>,
 ) -> Result<Response> {
@@ -123,15 +122,14 @@ pub async fn add(
         ..Default::default()
     };
     params.update(&mut item);
-    let item = item.insert(&ctx.db).await?;
-    let user_name = get_user_name(jwt_user).unwrap_or_default();
-    views::sets::show(&v, &item, &user_name)
+    let _item = item.insert(&ctx.db).await?;
+    hx_redirect(&PathAndQuery::from_static("/sets"))
 }
 
 #[debug_handler]
 pub async fn remove(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
     load_item(&ctx, id).await?.delete(&ctx.db).await?;
-    format::empty()
+    hx_redirect(&PathAndQuery::from_static("/sets"))
 }
 
 pub fn routes() -> Routes {

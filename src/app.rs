@@ -62,7 +62,6 @@ impl Hooks for App {
             .add_route(controllers::sets::routes())
             .add_route(controllers::auth::routes())
             .add_route(controllers::index::routes())
-            .add_route(controllers::auth_api::routes())
             .add_route(controllers::user_api::routes())
     }
 

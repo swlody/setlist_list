@@ -7,25 +7,17 @@
   {{ super() }}
   {% block body %}
     <div class="prose p-10">
-      <h1>View sets: {{ item.id }}</h1>
-      <div class="mb-10">
-        <div>
-          <label
-            ><b>{{ "band_name" | capitalize }}:</b> {{ item.band_name }}</label
-          >
-        </div>
-        <div>
-          <label><b>{{ "date" | capitalize }}:</b> {{ item.date }}</label>
-        </div>
-        <div>
-          <label><b>{{ "venue" | capitalize }}:</b> {{ item.venue }}</label>
-        </div>
-        <div>
-          <label><b>{{ "setlist" | capitalize }}:</b> {{ item.setlist }}</label>
-        </div>
-        <br />
-        <a href="/sets">Back to sets</a>
-      </div>
+      <h1>View set: {{ item.id }}</h1>
+      <label><b>Band name:</b> {{ item.band_name }}</label>
+      <br />
+      <label><b>Date:</b> {{ item.date }}</label>
+      <br />
+      <label><b>Venue:</b> {{ item.venue }}</label>
+      <br />
+      <label><b>Setlist:</b> {{ item.setlist }}</label>
+      <br />
+      <br />
+      <a href="/sets">Back to sets</a>
     </div>
   {% endblock %}
 {% endblock %}

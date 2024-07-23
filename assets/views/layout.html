@@ -57,10 +57,10 @@
             </label>
 
             {% if username == "" %}
-              <a class="btn" href="login">Login</a>
+              <a class="btn" href="/login">Login</a>
             {% else %}
               {{ username }}
-              <a class="btn" hx-post="api/auth/logout">Logout</a>
+              <a class="btn" hx-post="/logout">Logout</a>
             {% endif %}
           </div>
         </div>
