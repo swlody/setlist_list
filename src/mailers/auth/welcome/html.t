@@ -1,7 +1,7 @@
 <html>
 
 <body>
-  Dear {{name}},
+  Dear {{username}},
   Welcome to Loco! You can now log in to your account.
   Before you get started, please verify your account by clicking the link below:
   <a href="http://{{domain}}/verify#{{verifyToken}}">

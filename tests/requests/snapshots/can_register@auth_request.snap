@@ -11,7 +11,7 @@ Ok(
         email: "test@loco.com",
         password: "PASSWORD",
         api_key: "lo-PID",
-        name: "loco",
+        username: "loco",
         reset_token: None,
         reset_sent_at: None,
         email_verification_token: Some(

@@ -12,7 +12,7 @@ impl MigrationTrait for Migration {
             .col(string_uniq(Users::Email))
             .col(string(Users::Password))
             .col(string(Users::ApiKey).unique_key())
-            .col(string(Users::Name))
+            .col(string_uniq(Users::Username))
             .col(string_null(Users::ResetToken))
             .col(timestamp_null(Users::ResetSentAt))
             .col(string_null(Users::EmailVerificationToken))
@@ -36,7 +36,7 @@ pub enum Users {
     Id,
     Pid,
     Email,
-    Name,
+    Username,
     Password,
     ApiKey,
     ResetToken,

@@ -26,7 +26,7 @@ async fn can_get_current_user() {
 
         let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
         let response = request
-            .get("/api/user/current")
+            .get("/current_user")
             .add_header(auth_key, auth_value)
             .await;
 

@@ -7,7 +7,7 @@ use crate::models::_entities::users;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoginResponse {
     pub pid: String,
-    pub name: String,
+    pub username: String,
     pub is_verified: bool,
 }
 
@@ -16,7 +16,7 @@ impl LoginResponse {
     pub fn new(user: &users::Model) -> Self {
         Self {
             pid: user.pid.to_string(),
-            name: user.name.clone(),
+            username: user.username.clone(),
             is_verified: user.email_verified_at.is_some(),
         }
     }

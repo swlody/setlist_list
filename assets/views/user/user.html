@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}Main page{% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  {{ super() }}
+  {% block body %}
+    {{ page_user }}
+    {% for set in sets %}
+      <div>
+        <label><b>Band name:</b> {{ set.band_name }}</label>
+        <br />
+        <label><b>Date:</b> {{ set.date }}</label>
+        <br />
+        <label><b>Venue:</b> {{ set.venue }}</label>
+        <br />
+        <label><b>Setlist:</b> {{ set.setlist }}</label>
+        <br />
+        <a href="/sets/{{ set.id }}/edit">Edit</a>
+        <a href="/sets/{{ set.id }}">View</a>
+      </div>
+    {% endfor %}
+  {% endblock %}
+{% endblock %}

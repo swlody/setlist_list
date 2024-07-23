@@ -11,7 +11,7 @@ use crate::{
     mailers::auth::AuthMailer,
     models::users,
     models::users::{LoginParams, RegisterParams},
-    utils::get_user_name,
+    utils::get_username,
     utils::{hx_redirect, hx_redirect_with_cookies},
     views,
 };
@@ -183,7 +183,7 @@ pub async fn login_page(
     jwt_user: Option<auth::JWTWithUser<users::Model>>,
     ViewEngine(v): ViewEngine<MiniJinjaView>,
 ) -> Result<impl IntoResponse> {
-    let user_name = get_user_name(jwt_user).unwrap_or_default();
+    let user_name = get_username(jwt_user).unwrap_or_default();
     views::auth::login(&v, &user_name)
 }
 
@@ -191,8 +191,8 @@ pub fn routes() -> Routes {
     Routes::new()
         .add("/login", get(login_page).post(login))
         .add("/register", post(register))
-        .add("/verify", post(verify))
-        .add("/forgot", post(forgot))
-        .add("/reset", post(reset))
+        .add("/verify_email", post(verify))
+        .add("/forgot_password", post(forgot))
+        .add("/reset_password", post(reset))
         .add("/logout", post(logout))
 }

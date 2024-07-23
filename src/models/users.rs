@@ -16,13 +16,13 @@ pub struct LoginParams {
 pub struct RegisterParams {
     pub email: String,
     pub password: String,
-    pub name: String,
+    pub username: String,
 }
 
 #[derive(Debug, Validate, Deserialize)]
 pub struct Validator {
     #[validate(length(min = 2, message = "Name must be at least 2 characters long."))]
-    pub name: String,
+    pub username: String,
     #[validate(custom = "validation::is_valid_email")]
     pub email: String,
 }
@@ -30,7 +30,7 @@ pub struct Validator {
 impl Validatable for super::_entities::users::ActiveModel {
     fn validator(&self) -> Box<dyn Validate> {
         Box::new(Validator {
-            name: self.name.as_ref().to_owned(),
+            username: self.username.as_ref().to_owned(),
             email: self.email.as_ref().to_owned(),
         })
     }
@@ -146,6 +146,23 @@ impl super::_entities::users::Model {
         user.ok_or_else(|| ModelError::EntityNotFound)
     }
 
+    /// finds a user by the provided username
+    ///
+    /// # Errors
+    ///
+    /// When could not find user  or DB query error
+    pub async fn find_by_username(db: &DatabaseConnection, username: &str) -> ModelResult<Self> {
+        let user = users::Entity::find()
+            .filter(
+                model::query::condition()
+                    .eq(users::Column::Username, username)
+                    .build(),
+            )
+            .one(db)
+            .await?;
+        user.ok_or_else(|| ModelError::EntityNotFound)
+    }
+
     /// finds a user by the provided api key
     ///
     /// # Errors
@@ -203,7 +220,7 @@ impl super::_entities::users::Model {
         let user = users::ActiveModel {
             email: ActiveValue::set(params.email.to_string()),
             password: ActiveValue::set(password_hash),
-            name: ActiveValue::set(params.name.to_string()),
+            username: ActiveValue::set(params.username.to_string()),
             ..Default::default()
         }
         .insert(&txn)
@@ -279,7 +296,7 @@ impl super::_entities::users::ActiveModel {
     /// updates it in the database.
     ///
     /// This method hashes the provided password and sets it as the new password
-    /// for the user.    
+    /// for the user.
     /// # Errors
     ///
     /// when has DB query error or could not hashed the given password

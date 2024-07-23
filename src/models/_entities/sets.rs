@@ -14,6 +14,7 @@ pub struct Model {
     pub date: ChronoDate,
     pub venue: Option<String>,
     pub setlist: Option<Json>,
+    pub creator_pid: Uuid,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

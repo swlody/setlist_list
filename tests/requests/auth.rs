@@ -26,7 +26,7 @@ async fn can_register() {
     testing::request::<App, _, _>(|request, ctx| async move {
         let email = "test@loco.com";
         let payload = serde_json::json!({
-            "name": "loco",
+            "username": "loco",
             "email": email,
             "password": "12341234"
         });
@@ -60,7 +60,7 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
     testing::request::<App, _, _>(|request, ctx| async move {
         let email = "test@loco.com";
         let register_payload = serde_json::json!({
-            "name": "loco",
+            "username": "loco",
             "email": email,
             "password": "12341234"
         });
@@ -72,7 +72,7 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
         let verify_payload = serde_json::json!({
             "token": user.email_verification_token,
         });
-        request.post("/verify").json(&verify_payload).await;
+        request.post("/verify_email").json(&verify_payload).await;
 
         //verify user request
         let response = request
@@ -110,7 +110,7 @@ async fn can_login_without_verify() {
         let email = "test@loco.com";
         let password = "12341234";
         let register_payload = serde_json::json!({
-            "name": "loco",
+            "username": "loco",
             "email": email,
             "password": password
         });
@@ -149,7 +149,7 @@ async fn can_reset_password() {
         let forgot_payload = serde_json::json!({
             "email": login_data.user.email,
         });
-        _ = request.post("/forgot").json(&forgot_payload).await;
+        _ = request.post("/forgot_password").json(&forgot_payload).await;
 
         let user = users::Model::find_by_email(&ctx.db, &login_data.user.email)
             .await
@@ -163,7 +163,7 @@ async fn can_reset_password() {
             "password": new_password,
         });
 
-        let reset_response = request.post("/reset").json(&reset_payload).await;
+        let reset_response = request.post("/reset_password").json(&reset_payload).await;
 
         let user = users::Model::find_by_email(&ctx.db, &user.email)
             .await

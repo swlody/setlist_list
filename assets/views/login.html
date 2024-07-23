@@ -17,7 +17,7 @@
             id="forgot-password-form"
             x-show="form == 'forgot'"
             class="w-full space-y-4"
-            hx-post="/forgot"
+            hx-post="/forgot_password"
             hx-ext="json-enc"
           >
             {% block email_label %}
@@ -101,7 +101,12 @@
                   d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z"
                 />
               </svg>
-              <input type="text" class="grow" name="name" placeholder="Name" />
+              <input
+                type="text"
+                class="grow"
+                name="username"
+                placeholder="Username"
+              />
             </label>
 
             {{ self.login_labels() }}

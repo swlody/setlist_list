@@ -13,7 +13,7 @@ use crate::{
         _entities::sets::{ActiveModel, Column, Entity, Model},
         users,
     },
-    utils::{get_user_name, hx_redirect},
+    utils::{get_username, hx_redirect},
     views,
 };
 
@@ -45,7 +45,7 @@ pub async fn list(
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
-    let user_name = get_user_name(jwt_user).unwrap_or_default();
+    let user_name = get_username(jwt_user).unwrap_or_default();
     let item = Entity::find()
         .order_by(Column::Id, Order::Desc)
         .all(&ctx.db)
@@ -63,7 +63,7 @@ pub async fn new(
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(_ctx): State<AppContext>,
 ) -> Result<Response> {
-    let user_name = get_user_name(jwt_user).unwrap_or_default();
+    let user_name = get_username(jwt_user).unwrap_or_default();
     if user_name.is_empty() {
         views::index::unauthorized(&v)
     } else {
@@ -91,7 +91,7 @@ pub async fn edit(
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
-    let user_name = get_user_name(jwt_user).unwrap_or_default();
+    let user_name = get_username(jwt_user).unwrap_or_default();
     if user_name.is_empty() {
         views::index::unauthorized(&v)
     } else {
@@ -111,7 +111,7 @@ pub async fn show(
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
-    let user_name = get_user_name(jwt_user).unwrap_or_default();
+    let user_name = get_username(jwt_user).unwrap_or_default();
     if let Some(Path(id)) = path {
         let item = load_item(&ctx, id).await;
         if let Ok(item) = item {
@@ -126,11 +126,13 @@ pub async fn show(
 
 #[debug_handler]
 pub async fn add(
-    _auth: auth::JWT,
+    auth: auth::JWT,
     State(ctx): State<AppContext>,
     Json(params): Json<Params>,
 ) -> Result<Response> {
+    let uuid = uuid::Uuid::parse_str(&auth.claims.pid).map_err(|e| ModelError::Any(e.into()))?;
     let mut item = ActiveModel {
+        creator_pid: sea_orm::ActiveValue::Set(uuid),
         ..Default::default()
     };
     params.update(&mut item);

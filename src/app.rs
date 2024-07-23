@@ -25,7 +25,7 @@ use crate::{
     initializers::{self, minijinja_view_engine::MiniJinjaView},
     models::_entities::users,
     tasks,
-    utils::get_user_name,
+    utils::get_username,
     views,
     workers::downloader::DownloadWorker,
 };
@@ -62,7 +62,7 @@ impl Hooks for App {
             .add_route(controllers::sets::routes())
             .add_route(controllers::auth::routes())
             .add_route(controllers::index::routes())
-            .add_route(controllers::user_api::routes())
+            .add_route(controllers::user::routes())
     }
 
     async fn before_routes(_ctx: &AppContext) -> Result<Router<AppContext>> {
@@ -74,7 +74,7 @@ impl Hooks for App {
         ) -> impl IntoResponse {
             tracing::debug!("Returning 404 for {} on {}", method, uri.path());
 
-            let user_name = get_user_name(jwt_user).unwrap_or_default();
+            let user_name = get_username(jwt_user).unwrap_or_default();
             if method == Method::GET {
                 views::index::not_found(&v, &user_name)
             } else {

@@ -14,6 +14,7 @@ impl MigrationTrait for Migration {
                     .col(date(Sets::Date))
                     .col(string_null(Sets::Venue))
                     .col(json_null(Sets::Setlist))
+                    .col(uuid(Sets::CreatorPid))
                     .to_owned(),
             )
             .await
@@ -34,4 +35,5 @@ enum Sets {
     Date,
     Venue,
     Setlist,
+    CreatorPid,
 }

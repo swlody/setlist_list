@@ -27,7 +27,7 @@ impl AuthMailer {
             mailer::Args {
                 to: user.email.to_string(),
                 locals: json!({
-                  "name": user.name,
+                  "username": user.username,
                   "verifyToken": user.email_verification_token,
                   "domain": ctx.config.server.full_url()
                 }),
@@ -51,7 +51,7 @@ impl AuthMailer {
             mailer::Args {
                 to: user.email.to_string(),
                 locals: json!({
-                  "name": user.name,
+                  "username": user.username,
                   "resetToken": user.reset_token,
                   "domain": ctx.config.server.full_url()
                 }),

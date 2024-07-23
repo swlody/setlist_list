@@ -12,7 +12,7 @@ pub struct LoggedInUser {
 
 pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedInUser {
     let register_payload = serde_json::json!({
-        "name": "loco",
+        "username": "loco",
         "email": USER_EMAIL,
         "password": USER_PASSWORD
     });
@@ -27,7 +27,7 @@ pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedIn
         "token": user.email_verification_token,
     });
 
-    request.post("/verify").json(&verify_payload).await;
+    request.post("/verify_email").json(&verify_payload).await;
 
     let response = request
         .post("/login")
