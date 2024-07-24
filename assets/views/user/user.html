@@ -6,20 +6,22 @@
 {% block content %}
   {{ super() }}
   {% block body %}
-    {{ page_user }}
-    {% for set in sets %}
-      <div>
-        <label><b>Band name:</b> {{ set.band_name }}</label>
-        <br />
-        <label><b>Date:</b> {{ set.date }}</label>
-        <br />
-        <label><b>Venue:</b> {{ set.venue }}</label>
-        <br />
-        <label><b>Setlist:</b> {{ set.setlist }}</label>
-        <br />
-        <a href="/sets/{{ set.id }}/edit">Edit</a>
-        <a href="/sets/{{ set.id }}">View</a>
-      </div>
-    {% endfor %}
+    <div class="prose p-10">
+      <h1>{{ page_user }}</h1>
+      {% for set in sets %}
+        <div>
+          <label><b>Band name:</b> {{ set.band_name }}</label>
+          <br />
+          <label><b>Date:</b> {{ set.date }}</label>
+          <br />
+          <label><b>Venue:</b> {{ set.venue }}</label>
+          <br />
+          <label><b>Setlist:</b> {{ set.setlist }}</label>
+          <br />
+          <a href="/sets/{{ set.id }}/edit">Edit</a>
+          <a href="/sets/{{ set.id }}">View</a>
+        </div>
+      {% endfor %}
+    </div>
   {% endblock %}
 {% endblock %}
