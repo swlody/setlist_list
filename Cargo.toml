@@ -19,7 +19,6 @@ tracing = "0.1.40"
 chrono = "0.4"
 validator = { version = "0.16.1" }
 sea-orm = { version = "1.0.0-rc.7", features = [
-  "sqlx-sqlite",
   "sqlx-postgres",
   "runtime-tokio-rustls",
   "macros",
@@ -33,6 +32,12 @@ minijinja-autoreload = "2.0.3"
 rand = "0.8.5"
 time = "0.3.36"
 axum-htmx = "0.6.0"
+sqlx = { version = "0.7.4", default-features = false, features = [
+  "postgres",
+  "runtime-tokio-rustls",
+  "macros",
+  "uuid",
+] }
 
 [[bin]]
 name = "setlist_list-cli"

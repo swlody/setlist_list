@@ -1,6 +1,6 @@
 use loco_rs::prelude::*;
 
-use crate::models::_entities::sets;
+use crate::models::sets;
 
 /// Render a list view of sets.
 ///

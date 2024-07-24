@@ -4,15 +4,11 @@
 use auth::JWTWithUser;
 use axum::{debug_handler, http::uri::PathAndQuery};
 use loco_rs::prelude::*;
-use sea_orm::{sea_query::Order, QueryOrder};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     initializers::minijinja_view_engine::MiniJinjaView,
-    models::{
-        _entities::sets::{ActiveModel, Column, Entity, Model},
-        users,
-    },
+    models::{sets, users},
     utils::{get_username, hx_redirect},
     views,
 };
@@ -26,17 +22,16 @@ pub struct Params {
 }
 
 impl Params {
-    fn update(&self, item: &mut ActiveModel) {
-        item.band_name = Set(self.band_name.clone());
-        item.date = Set(self.date);
-        item.venue = Set(self.venue.clone());
-        item.setlist = Set(self.setlist.clone());
+    fn update(&self, item: &mut sets::Model) {
+        item.band_name = self.band_name.clone();
+        item.date = self.date;
+        item.venue = self.venue.clone();
+        item.setlist = self.setlist.clone();
     }
 }
 
-async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
-    let item = Entity::find_by_id(id).one(&ctx.db).await?;
-    item.ok_or_else(|| Error::NotFound)
+async fn load_item(ctx: &AppContext, id: i32) -> Result<sets::Model> {
+    Ok(sets::Model::find_by_id(&ctx.db, id).await?)
 }
 
 #[debug_handler]
@@ -46,10 +41,7 @@ pub async fn list(
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
     let user_name = get_username(jwt_user).unwrap_or_default();
-    let item = Entity::find()
-        .order_by(Column::Id, Order::Desc)
-        .all(&ctx.db)
-        .await;
+    let item = sets::Model::list(&ctx.db).await;
     if let Ok(item) = item {
         views::sets::list(&v, &item, &user_name)
     } else {
@@ -77,8 +69,7 @@ pub async fn update(
     State(ctx): State<AppContext>,
     Json(params): Json<Params>,
 ) -> Result<Response> {
-    let item = load_item(&ctx, id).await?;
-    let mut item = item.into_active_model();
+    let mut item = load_item(&ctx, id).await?;
     params.update(&mut item);
     let item = item.update(&ctx.db).await?;
     format::json(item)
@@ -131,18 +122,18 @@ pub async fn add(
     Json(params): Json<Params>,
 ) -> Result<Response> {
     let uuid = uuid::Uuid::parse_str(&auth.claims.pid).map_err(|e| ModelError::Any(e.into()))?;
-    let mut item = ActiveModel {
-        creator_pid: sea_orm::ActiveValue::Set(uuid),
+    let mut item = sets::Model {
+        creator_pid: uuid,
         ..Default::default()
     };
     params.update(&mut item);
-    let _item = item.insert(&ctx.db).await?;
+    item.insert(&ctx.db).await?;
     hx_redirect(&PathAndQuery::from_static("/sets"))
 }
 
 #[debug_handler]
 pub async fn remove(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
-    load_item(&ctx, id).await?.delete(&ctx.db).await?;
+    sets::Model::delete_by_id(&ctx.db, id).await?;
     hx_redirect(&PathAndQuery::from_static("/sets"))
 }
 
