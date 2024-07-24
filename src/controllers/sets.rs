@@ -23,10 +23,10 @@ pub struct Params {
 
 impl Params {
     fn update(&self, item: &mut sets::Model) {
-        item.band_name = self.band_name.clone();
+        item.band_name.clone_from(&self.band_name);
         item.date = self.date;
-        item.venue = self.venue.clone();
-        item.setlist = self.setlist.clone();
+        item.venue.clone_from(&self.venue);
+        item.setlist.clone_from(&self.setlist);
     }
 }
 
@@ -71,7 +71,7 @@ pub async fn update(
 ) -> Result<Response> {
     let mut item = load_item(&ctx, id).await?;
     params.update(&mut item);
-    let item = item.update(&ctx.db).await?;
+    item.update(&ctx.db).await?;
     format::json(item)
 }
 

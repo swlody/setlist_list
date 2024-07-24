@@ -16,21 +16,17 @@ pub struct Model {
 
 impl Model {
     pub async fn find_by_creator_pid(db: &DatabaseConnection, pid: Uuid) -> ModelResult<Vec<Self>> {
-        Ok(
-            sqlx::query_as!(Self, "SELECT * FROM sets WHERE creator_pid = $1", pid)
-                .fetch_all(db.get_postgres_connection_pool())
-                .await
-                .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?,
-        )
+        sqlx::query_as!(Self, "SELECT * FROM sets WHERE creator_pid = $1", pid)
+            .fetch_all(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))
     }
 
     pub async fn find_by_id(db: &DatabaseConnection, id: i32) -> ModelResult<Self> {
-        Ok(
-            sqlx::query_as!(Self, "SELECT * FROM sets WHERE id = $1", id)
-                .fetch_one(db.get_postgres_connection_pool())
-                .await
-                .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?,
-        )
+        sqlx::query_as!(Self, "SELECT * FROM sets WHERE id = $1", id)
+            .fetch_one(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))
     }
 
     pub async fn delete_by_id(db: &DatabaseConnection, id: i32) -> ModelResult<()> {
@@ -42,13 +38,13 @@ impl Model {
     }
 
     pub async fn list(db: &DatabaseConnection) -> ModelResult<Vec<Self>> {
-        Ok(sqlx::query_as!(Self, "SELECT * FROM sets")
+        sqlx::query_as!(Self, "SELECT * FROM sets")
             .fetch_all(db.get_postgres_connection_pool())
             .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?)
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))
     }
 
-    pub async fn insert(self, db: &DatabaseConnection) -> ModelResult<()> {
+    pub async fn insert(&self, db: &DatabaseConnection) -> ModelResult<()> {
         sqlx::query!(
             "INSERT INTO sets (band_name, date, venue, setlist, creator_pid) VALUES ($1, $2, $3, $4, $5)",
             self.band_name,
@@ -63,7 +59,7 @@ impl Model {
         Ok(())
     }
 
-    pub async fn update(self, db: &DatabaseConnection) -> ModelResult<()> {
+    pub async fn update(&self, db: &DatabaseConnection) -> ModelResult<()> {
         sqlx::query!(
             "UPDATE sets SET band_name = $1, date = $2, venue = $3, setlist = $4 WHERE id = $5",
             self.band_name,

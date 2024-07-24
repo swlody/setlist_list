@@ -54,7 +54,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms -A clippy::redundant_else -A clippy::missing_errors_doc -A clippy::option-if-let-else
+          args: --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms -A clippy::redundant_else -A clippy::missing_errors_doc -A clippy::option-if-let-else -A clippy::missing_panics_doc
 
   test:
     name: Run Tests
