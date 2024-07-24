@@ -9,6 +9,7 @@ on:
 env:
   RUST_TOOLCHAIN: stable
   TOOLCHAIN_PROFILE: minimal
+  SQLX_OFFLINE: true
 
 jobs:
   rustfmt:
