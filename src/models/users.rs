@@ -1,10 +1,26 @@
 use async_trait::async_trait;
 use chrono::offset::Local;
-use loco_rs::{auth::jwt, hash, prelude::*};
+use loco_rs::{auth::jwt, hash, model, prelude::*};
+use sea_orm::RuntimeErr;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use sqlx::types::{chrono::NaiveDateTime, Uuid};
 
-pub use super::_entities::users::{self, ActiveModel, Entity, Model};
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct Model {
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub id: i32,
+    pub pid: Uuid,
+    pub email: String,
+    pub password: String,
+    pub api_key: String,
+    pub username: String,
+    pub reset_token: Option<String>,
+    pub reset_sent_at: Option<NaiveDateTime>,
+    pub email_verification_token: Option<String>,
+    pub email_verification_sent_at: Option<NaiveDateTime>,
+    pub email_verified_at: Option<NaiveDateTime>,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoginParams {
@@ -23,49 +39,28 @@ pub struct RegisterParams {
 pub struct Validator {
     #[validate(length(min = 2, message = "Name must be at least 2 characters long."))]
     pub username: String,
-    #[validate(custom = "validation::is_valid_email")]
+    #[validate(email)]
     pub email: String,
 }
 
-impl Validatable for super::_entities::users::ActiveModel {
+impl Validatable for Model {
     fn validator(&self) -> Box<dyn Validate> {
         Box::new(Validator {
-            username: self.username.as_ref().to_owned(),
-            email: self.email.as_ref().to_owned(),
+            username: self.username.clone(),
+            email: self.email.clone(),
         })
     }
 }
 
-#[async_trait::async_trait]
-impl ActiveModelBehavior for super::_entities::users::ActiveModel {
-    async fn before_save<C>(self, _db: &C, insert: bool) -> Result<Self, DbErr>
-    where
-        C: ConnectionTrait,
-    {
-        self.validate()?;
-        if insert {
-            let mut this = self;
-            this.pid = ActiveValue::Set(Uuid::new_v4());
-            this.api_key = ActiveValue::Set(format!("lo-{}", Uuid::new_v4()));
-            Ok(this)
-        } else {
-            Ok(self)
-        }
-    }
-}
-
 #[async_trait]
-impl Authenticable for super::_entities::users::Model {
+impl Authenticable for Model {
     async fn find_by_api_key(db: &DatabaseConnection, api_key: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::ApiKey, api_key)
-                    .build(),
-            )
-            .one(db)
-            .await?;
-        user.ok_or_else(|| ModelError::EntityNotFound)
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE api_key = $1", api_key)
+            .fetch_optional(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+
+        user.ok_or(ModelError::EntityNotFound)
     }
 
     async fn find_by_claims_key(db: &DatabaseConnection, claims_key: &str) -> ModelResult<Self> {
@@ -73,22 +68,18 @@ impl Authenticable for super::_entities::users::Model {
     }
 }
 
-impl super::_entities::users::Model {
+impl Model {
     /// finds a user by the provided email
     ///
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
     pub async fn find_by_email(db: &DatabaseConnection, email: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::Email, email)
-                    .build(),
-            )
-            .one(db)
-            .await?;
-        user.ok_or_else(|| ModelError::EntityNotFound)
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE email = $1", email)
+            .fetch_optional(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        user.ok_or(ModelError::EntityNotFound)
     }
 
     /// finds a user by the provided verification token
@@ -100,15 +91,15 @@ impl super::_entities::users::Model {
         db: &DatabaseConnection,
         token: &str,
     ) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::EmailVerificationToken, token)
-                    .build(),
-            )
-            .one(db)
-            .await?;
-        user.ok_or_else(|| ModelError::EntityNotFound)
+        let user = sqlx::query_as!(
+            Self,
+            "SELECT * FROM users WHERE email_verification_token = $1",
+            token
+        )
+        .fetch_optional(db.get_postgres_connection_pool())
+        .await
+        .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        user.ok_or(ModelError::EntityNotFound)
     }
 
     /// /// finds a user by the provided reset token
@@ -117,15 +108,11 @@ impl super::_entities::users::Model {
     ///
     /// When could not find user by the given token or DB query error
     pub async fn find_by_reset_token(db: &DatabaseConnection, token: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::ResetToken, token)
-                    .build(),
-            )
-            .one(db)
-            .await?;
-        user.ok_or_else(|| ModelError::EntityNotFound)
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE reset_token = $1", token)
+            .fetch_optional(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        user.ok_or(ModelError::EntityNotFound)
     }
 
     /// finds a user by the provided pid
@@ -135,15 +122,11 @@ impl super::_entities::users::Model {
     /// When could not find user  or DB query error
     pub async fn find_by_pid(db: &DatabaseConnection, pid: &str) -> ModelResult<Self> {
         let parse_uuid = Uuid::parse_str(pid).map_err(|e| ModelError::Any(e.into()))?;
-        let user = users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::Pid, parse_uuid)
-                    .build(),
-            )
-            .one(db)
-            .await?;
-        user.ok_or_else(|| ModelError::EntityNotFound)
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE pid = $1", parse_uuid)
+            .fetch_optional(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        user.ok_or(ModelError::EntityNotFound)
     }
 
     /// finds a user by the provided username
@@ -152,15 +135,11 @@ impl super::_entities::users::Model {
     ///
     /// When could not find user  or DB query error
     pub async fn find_by_username(db: &DatabaseConnection, username: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::Username, username)
-                    .build(),
-            )
-            .one(db)
-            .await?;
-        user.ok_or_else(|| ModelError::EntityNotFound)
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE username = $1", username)
+            .fetch_optional(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        user.ok_or(ModelError::EntityNotFound)
     }
 
     /// finds a user by the provided api key
@@ -169,15 +148,11 @@ impl super::_entities::users::Model {
     ///
     /// When could not find user by the given token or DB query error
     pub async fn find_by_api_key(db: &DatabaseConnection, api_key: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::ApiKey, api_key)
-                    .build(),
-            )
-            .one(db)
-            .await?;
-        user.ok_or_else(|| ModelError::EntityNotFound)
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE api_key = $1", api_key)
+            .fetch_optional(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        user.ok_or(ModelError::EntityNotFound)
     }
 
     /// Verifies whether the provided plain password matches the hashed password
@@ -200,33 +175,37 @@ impl super::_entities::users::Model {
         db: &DatabaseConnection,
         params: &RegisterParams,
     ) -> ModelResult<Self> {
-        let txn = db.begin().await?;
-
-        if users::Entity::find()
-            .filter(
-                model::query::condition()
-                    .eq(users::Column::Email, &params.email)
-                    .build(),
-            )
-            .one(&txn)
-            .await?
-            .is_some()
-        {
-            return Err(ModelError::EntityAlreadyExists {});
-        }
-
         let password_hash =
             hash::hash_password(&params.password).map_err(|e| ModelError::Any(e.into()))?;
-        let user = users::ActiveModel {
-            email: ActiveValue::set(params.email.to_string()),
-            password: ActiveValue::set(password_hash),
-            username: ActiveValue::set(params.username.to_string()),
+        let pid = Uuid::new_v4();
+        let api_key = format!("lo-{}", Uuid::new_v4());
+        let user = Self {
+            pid,
+            email: params.email.to_string(),
+            password: password_hash,
+            api_key,
+            username: params.username.to_string(),
             ..Default::default()
-        }
-        .insert(&txn)
-        .await?;
+        };
+        user.validate().map_err(sea_orm::DbErr::from)?;
 
-        txn.commit().await?;
+        let user = sqlx::query_as!(
+            Self,
+            "INSERT into USERS (pid, email, password, api_key, username, reset_token, reset_sent_at, email_verification_token, email_verification_sent_at, email_verified_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
+            user.pid,
+            user.email,
+            user.password,
+            user.api_key,
+            user.username,
+            user.reset_token,
+            user.reset_sent_at,
+            user.email_verification_token,
+            user.email_verification_sent_at,
+            user.email_verified_at
+        )
+        .fetch_one(db.get_postgres_connection_pool())
+        .await
+        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
 
         Ok(user)
     }
@@ -239,9 +218,7 @@ impl super::_entities::users::Model {
     pub fn generate_jwt(&self, secret: &str, expiration: &u64) -> ModelResult<String> {
         Ok(jwt::JWT::new(secret).generate_token(expiration, self.pid.to_string(), None)?)
     }
-}
 
-impl super::_entities::users::ActiveModel {
     /// Sets the email verification information for the user and
     /// updates it in the database.
     ///
@@ -252,12 +229,20 @@ impl super::_entities::users::ActiveModel {
     ///
     /// when has DB query error
     pub async fn set_email_verification_sent(
-        mut self,
+        &mut self,
         db: &DatabaseConnection,
-    ) -> ModelResult<Model> {
-        self.email_verification_sent_at = ActiveValue::set(Some(Local::now().naive_local()));
-        self.email_verification_token = ActiveValue::Set(Some(Uuid::new_v4().to_string()));
-        Ok(self.update(db).await?)
+    ) -> ModelResult<()> {
+        self.email_verification_sent_at = Some(Local::now().naive_local());
+        self.email_verification_token = Some(Uuid::new_v4().to_string());
+        sqlx::query!(
+            "UPDATE users SET email_verification_sent_at = $1, email_verification_token = $2",
+            self.email_verification_sent_at,
+            self.email_verification_token
+        )
+        .execute(db.get_postgres_connection_pool())
+        .await
+        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        Ok(())
     }
 
     /// Sets the information for a reset password request,
@@ -272,10 +257,18 @@ impl super::_entities::users::ActiveModel {
     /// # Errors
     ///
     /// when has DB query error
-    pub async fn set_forgot_password_sent(mut self, db: &DatabaseConnection) -> ModelResult<Model> {
-        self.reset_sent_at = ActiveValue::set(Some(Local::now().naive_local()));
-        self.reset_token = ActiveValue::Set(Some(Uuid::new_v4().to_string()));
-        Ok(self.update(db).await?)
+    pub async fn set_forgot_password_sent(&mut self, db: &DatabaseConnection) -> ModelResult<()> {
+        self.reset_sent_at = Some(Local::now().naive_local());
+        self.reset_token = Some(Uuid::new_v4().to_string());
+        sqlx::query!(
+            "UPDATE users SET reset_sent_at = $1, reset_token = $2",
+            self.reset_sent_at,
+            self.reset_token
+        )
+        .execute(db.get_postgres_connection_pool())
+        .await
+        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        Ok(())
     }
 
     /// Records the verification time when a user verifies their
@@ -287,9 +280,16 @@ impl super::_entities::users::ActiveModel {
     /// # Errors
     ///
     /// when has DB query error
-    pub async fn verified(mut self, db: &DatabaseConnection) -> ModelResult<Model> {
-        self.email_verified_at = ActiveValue::set(Some(Local::now().naive_local()));
-        Ok(self.update(db).await?)
+    pub async fn verified(&mut self, db: &DatabaseConnection) -> ModelResult<()> {
+        self.email_verified_at = Some(Local::now().naive_local());
+        sqlx::query!(
+            "UPDATE users SET email_verified_at = $1",
+            self.email_verified_at
+        )
+        .execute(db.get_postgres_connection_pool())
+        .await
+        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        Ok(())
     }
 
     /// Resets the current user password with a new password and
@@ -301,14 +301,22 @@ impl super::_entities::users::ActiveModel {
     ///
     /// when has DB query error or could not hashed the given password
     pub async fn reset_password(
-        mut self,
+        &mut self,
         db: &DatabaseConnection,
         password: &str,
-    ) -> ModelResult<Model> {
-        self.password =
-            ActiveValue::set(hash::hash_password(password).map_err(|e| ModelError::Any(e.into()))?);
-        self.reset_token = ActiveValue::Set(None);
-        self.reset_sent_at = ActiveValue::Set(None);
-        Ok(self.update(db).await?)
+    ) -> ModelResult<()> {
+        self.password = hash::hash_password(password).map_err(|e| ModelError::Any(e.into()))?;
+        self.reset_token = None;
+        self.reset_sent_at = None;
+        sqlx::query!(
+            "UPDATE users SET password = $1, reset_token = $2, reset_sent_at = $3",
+            self.password,
+            self.reset_token,
+            self.reset_sent_at
+        )
+        .execute(db.get_postgres_connection_pool())
+        .await
+        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        Ok(())
     }
 }

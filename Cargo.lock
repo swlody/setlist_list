@@ -3831,6 +3831,7 @@ dependencies = [
  "sea-orm",
  "serde",
  "serde_json",
+ "serde_yaml",
  "serial_test",
  "sqlx",
  "time",

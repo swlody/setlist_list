@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{fs::File, path::Path};
 
 use async_trait::async_trait;
 use axum::{
@@ -10,25 +10,48 @@ use loco_rs::{
     app::{AppContext, Hooks, Initializer},
     boot::{create_app, BootResult, StartMode},
     controller::AppRoutes,
-    db::{self, truncate_table},
     environment::Environment,
+    model,
     prelude::*,
     task::Tasks,
-    worker::{AppWorker, Processor},
+    worker::Processor,
     Result,
 };
 use migration::Migrator;
-use sea_orm::DatabaseConnection;
+use sea_orm::{DatabaseConnection, RuntimeErr};
 
 use crate::{
     controllers,
     initializers::{self, minijinja_view_engine::MiniJinjaView},
-    models::_entities::users,
+    models::users,
     tasks,
     utils::get_username,
     views,
-    workers::downloader::DownloadWorker,
 };
+
+pub async fn seed_database(db: &DatabaseConnection, users_path: &str) -> Result<()> {
+    let users_loader: Vec<serde_json::Value> = serde_yaml::from_reader(File::open(users_path)?)?;
+
+    for user in users_loader {
+        let user: users::Model = serde_json::from_value(user)?;
+        sqlx::query!(
+            "INSERT into USERS (id, pid, email, password, api_key, username, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+            user.id,
+            user.pid,
+            user.email,
+            user.password,
+            user.api_key,
+            user.username,
+            user.created_at,
+            user.updated_at
+        )
+        .execute(db.get_postgres_connection_pool())
+        .await
+        .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+    }
+
+    Ok(())
+}
 
 pub struct App;
 #[async_trait]
@@ -86,8 +109,8 @@ impl Hooks for App {
         Ok(router)
     }
 
-    fn connect_workers<'a>(p: &'a mut Processor, ctx: &'a AppContext) {
-        p.register(DownloadWorker::build(ctx));
+    fn connect_workers<'a>(_p: &'a mut Processor, _ctx: &'a AppContext) {
+        // p.register(DownloadWorker::build(ctx));
     }
 
     fn register_tasks(tasks: &mut Tasks) {
@@ -95,12 +118,22 @@ impl Hooks for App {
     }
 
     async fn truncate(db: &DatabaseConnection) -> Result<()> {
-        truncate_table(db, users::Entity).await?;
+        // TODO automatic mapping of the model error somehow?
+        sqlx::query!("TRUNCATE users")
+            .execute(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+
+        sqlx::query!("TRUNCATE sets")
+            .execute(db.get_postgres_connection_pool())
+            .await
+            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+
         Ok(())
     }
 
     async fn seed(db: &DatabaseConnection, base: &Path) -> Result<()> {
-        db::seed::<users::ActiveModel>(db, &base.join("users.yaml").display().to_string()).await?;
+        seed_database(db, &base.join("users.yaml").display().to_string()).await?;
         Ok(())
     }
 }

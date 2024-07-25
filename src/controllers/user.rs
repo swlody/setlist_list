@@ -4,7 +4,7 @@ use loco_rs::prelude::*;
 
 use crate::{
     initializers::minijinja_view_engine::MiniJinjaView,
-    models::_entities::users,
+    models::users,
     utils::get_username,
     views::{self, user::CurrentResponse},
 };
@@ -25,7 +25,7 @@ async fn user(
     let user = users::Model::find_by_username(&ctx.db, &username).await;
     let own_user = get_username(jwt_user).unwrap_or_default();
     if let Ok(user) = user {
-        let sets = crate::models::sets::Model::find_by_creator_pid(&ctx.db, user.pid).await?;
+        let sets = crate::models::sets::Model::list_by_creator_pid(&ctx.db, user.pid).await?;
         views::user::sets(&v, &user.username, &sets, &own_user)
     } else {
         views::index::not_found(&v, &own_user)

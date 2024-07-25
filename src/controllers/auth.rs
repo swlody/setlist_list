@@ -41,7 +41,7 @@ async fn register(
 ) -> Result<Response> {
     let res = users::Model::create_with_password(&ctx.db, &params).await;
 
-    let user = match res {
+    let mut user = match res {
         Ok(user) => user,
         Err(err) => {
             tracing::info!(
@@ -53,10 +53,7 @@ async fn register(
         }
     };
 
-    let user = user
-        .into_active_model()
-        .set_email_verification_sent(&ctx.db)
-        .await?;
+    user.set_email_verification_sent(&ctx.db).await?;
 
     AuthMailer::send_welcome(&ctx, &user).await?;
 
@@ -70,13 +67,12 @@ async fn verify(
     State(ctx): State<AppContext>,
     Json(params): Json<VerifyParams>,
 ) -> Result<Response> {
-    let user = users::Model::find_by_verification_token(&ctx.db, &params.token).await?;
+    let mut user = users::Model::find_by_verification_token(&ctx.db, &params.token).await?;
 
     if user.email_verified_at.is_some() {
         tracing::info!(pid = user.pid.to_string(), "user already verified");
     } else {
-        let active_model = user.into_active_model();
-        let user = active_model.verified(&ctx.db).await?;
+        user.verified(&ctx.db).await?;
         tracing::info!(pid = user.pid.to_string(), "user verified");
     }
 
@@ -92,16 +88,13 @@ async fn forgot(
     State(ctx): State<AppContext>,
     Json(params): Json<ForgotParams>,
 ) -> Result<Response> {
-    let Ok(user) = users::Model::find_by_email(&ctx.db, &params.email).await else {
+    let Ok(mut user) = users::Model::find_by_email(&ctx.db, &params.email).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
         return hx_redirect(&PathAndQuery::from_static("/login"));
     };
 
-    let user = user
-        .into_active_model()
-        .set_forgot_password_sent(&ctx.db)
-        .await?;
+    user.set_forgot_password_sent(&ctx.db).await?;
 
     AuthMailer::forgot_password(&ctx, &user).await?;
 
@@ -111,16 +104,14 @@ async fn forgot(
 /// reset user password by the given parameters
 #[debug_handler]
 async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -> Result<Response> {
-    let Ok(user) = users::Model::find_by_reset_token(&ctx.db, &params.token).await else {
+    let Ok(mut user) = users::Model::find_by_reset_token(&ctx.db, &params.token).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
         tracing::info!("reset token not found");
 
         return format::json(());
     };
-    user.into_active_model()
-        .reset_password(&ctx.db, &params.password)
-        .await?;
+    user.reset_password(&ctx.db, &params.password).await?;
 
     format::json(())
 }

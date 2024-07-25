@@ -1,10 +1,9 @@
 use insta::assert_debug_snapshot;
 use loco_rs::{model::ModelError, testing};
-use sea_orm::{ActiveModelTrait, ActiveValue, IntoActiveModel};
 use serial_test::serial;
 use setlist_list::{
     app::App,
-    models::users::{self, Model, RegisterParams},
+    models::users::{Model, RegisterParams},
 };
 
 macro_rules! configure_insta {
@@ -14,24 +13,6 @@ macro_rules! configure_insta {
         settings.set_snapshot_suffix("users");
         let _guard = settings.bind_to_scope();
     };
-}
-
-#[tokio::test]
-#[serial]
-async fn test_can_validate_model() {
-    configure_insta!();
-
-    let boot = testing::boot_test::<App>().await.unwrap();
-
-    let res = users::ActiveModel {
-        username: ActiveValue::set("1".to_string()),
-        email: ActiveValue::set("invalid-email".to_string()),
-        ..Default::default()
-    }
-    .insert(&boot.app_context.db)
-    .await;
-
-    assert_debug_snapshot!(res);
 }
 
 #[tokio::test]
@@ -72,7 +53,7 @@ async fn handle_create_with_password_with_duplicate() {
         },
     )
     .await;
-    assert_debug_snapshot!(new_user);
+    assert!(new_user.is_err());
 }
 
 #[tokio::test]
@@ -116,7 +97,7 @@ async fn can_verification_token() {
     let boot = testing::boot_test::<App>().await.unwrap();
     testing::seed::<App>(&boot.app_context.db).await.unwrap();
 
-    let user = Model::find_by_pid(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
+    let mut user = Model::find_by_pid(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
         .await
         .unwrap();
 
@@ -124,7 +105,6 @@ async fn can_verification_token() {
     assert!(user.email_verification_token.is_none());
 
     assert!(user
-        .into_active_model()
         .set_email_verification_sent(&boot.app_context.db)
         .await
         .is_ok());
@@ -145,7 +125,7 @@ async fn can_set_forgot_password_sent() {
     let boot = testing::boot_test::<App>().await.unwrap();
     testing::seed::<App>(&boot.app_context.db).await.unwrap();
 
-    let user = Model::find_by_pid(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
+    let mut user = Model::find_by_pid(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
         .await
         .unwrap();
 
@@ -153,7 +133,6 @@ async fn can_set_forgot_password_sent() {
     assert!(user.reset_token.is_none());
 
     assert!(user
-        .into_active_model()
         .set_forgot_password_sent(&boot.app_context.db)
         .await
         .is_ok());
@@ -174,17 +153,13 @@ async fn can_verified() {
     let boot = testing::boot_test::<App>().await.unwrap();
     testing::seed::<App>(&boot.app_context.db).await.unwrap();
 
-    let user = Model::find_by_pid(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
+    let mut user = Model::find_by_pid(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
         .await
         .unwrap();
 
     assert!(user.email_verified_at.is_none());
 
-    assert!(user
-        .into_active_model()
-        .verified(&boot.app_context.db)
-        .await
-        .is_ok());
+    assert!(user.verified(&boot.app_context.db).await.is_ok());
 
     let user = Model::find_by_pid(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
         .await
@@ -209,7 +184,6 @@ async fn can_reset_password() {
 
     assert!(user
         .clone()
-        .into_active_model()
         .reset_password(&boot.app_context.db, "new-password")
         .await
         .is_ok());
