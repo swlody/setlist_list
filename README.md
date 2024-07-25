@@ -9,5 +9,5 @@ WIP build:
 npm install --prefix ./assets
 ./assets/node_modules/.bin/tailwindcss -c assets/tailwind.config.js -i assets/styles/input.css -o assets/static/dist/output.css
 ./assets/node_modules/.bin/webpack -c assets/webpack.config.js --no-devtool --mode development
-cargo loco start
+cargo run start
 ```
