@@ -24,8 +24,8 @@ jobs:
 
     - name: Build
       run: |
-        npm install
-        npx webpack --mode production
+        npm install --prefix ./assets
+        ./assets/node_modules/.bin/webpack -c assets/webpack.config.js --mode production
 
     - uses: actions/upload-artifact@v4
       with:

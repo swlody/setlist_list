@@ -18,5 +18,5 @@ target/
 
 **/.DS_Store
 
-node_modules/
+assets/node_modules/
 assets/static/dist/

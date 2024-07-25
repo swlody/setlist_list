@@ -3,4 +3,6 @@
         "*.css": "tailwindcss",
         "*.html": "jinja-html"
     },
+    "prettier.configPath": "${workspaceFolder}/assets/prettier.config.js",
+    "prettier.ignorePath": "${workspaceFolder}/assets/.prettierignore",
 }
