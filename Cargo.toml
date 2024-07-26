@@ -1,6 +1,5 @@
 [workspace]
 members = ["loco/macros", "loco/xtask", "loco/loco-extras"]
-exclude = ["starters"]
 
 [workspace.package]
 edition = "2021"
