@@ -1,9 +1,9 @@
 use async_trait::async_trait;
 use chrono::offset::Local;
-use loco_rs::{auth::jwt, hash, model, prelude::*};
-use sea_orm::RuntimeErr;
+use loco_rs::{auth::jwt, hash, prelude::*};
 use serde::{Deserialize, Serialize};
 use sqlx::types::{chrono::NaiveDateTime, Uuid};
+use sqlx::PgPool;
 
 #[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Model {
@@ -54,16 +54,14 @@ impl Validatable for Model {
 
 #[async_trait]
 impl Authenticable for Model {
-    async fn find_by_api_key(db: &DatabaseConnection, api_key: &str) -> ModelResult<Self> {
+    async fn find_by_api_key(db: &PgPool, api_key: &str) -> ModelResult<Self> {
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE api_key = $1", api_key)
-            .fetch_optional(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
-
+            .fetch_optional(db)
+            .await?;
         user.ok_or(ModelError::EntityNotFound)
     }
 
-    async fn find_by_claims_key(db: &DatabaseConnection, claims_key: &str) -> ModelResult<Self> {
+    async fn find_by_claims_key(db: &PgPool, claims_key: &str) -> ModelResult<Self> {
         Self::find_by_pid(db, claims_key).await
     }
 }
@@ -74,11 +72,11 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
-    pub async fn find_by_email(db: &DatabaseConnection, email: &str) -> ModelResult<Self> {
+    pub async fn find_by_email(db: &PgPool, email: &str) -> ModelResult<Self> {
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE email = $1", email)
-            .fetch_optional(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+            .fetch_optional(db)
+            .await?;
+
         user.ok_or(ModelError::EntityNotFound)
     }
 
@@ -87,18 +85,15 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
-    pub async fn find_by_verification_token(
-        db: &DatabaseConnection,
-        token: &str,
-    ) -> ModelResult<Self> {
+    pub async fn find_by_verification_token(db: &PgPool, token: &str) -> ModelResult<Self> {
         let user = sqlx::query_as!(
             Self,
             "SELECT * FROM users WHERE email_verification_token = $1",
             token
         )
-        .fetch_optional(db.get_postgres_connection_pool())
-        .await
-        .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        .fetch_optional(db)
+        .await?;
+
         user.ok_or(ModelError::EntityNotFound)
     }
 
@@ -107,11 +102,11 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
-    pub async fn find_by_reset_token(db: &DatabaseConnection, token: &str) -> ModelResult<Self> {
+    pub async fn find_by_reset_token(db: &PgPool, token: &str) -> ModelResult<Self> {
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE reset_token = $1", token)
-            .fetch_optional(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+            .fetch_optional(db)
+            .await?;
+
         user.ok_or(ModelError::EntityNotFound)
     }
 
@@ -120,12 +115,12 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user  or DB query error
-    pub async fn find_by_pid(db: &DatabaseConnection, pid: &str) -> ModelResult<Self> {
+    pub async fn find_by_pid(db: &PgPool, pid: &str) -> ModelResult<Self> {
         let parse_uuid = Uuid::parse_str(pid).map_err(|e| ModelError::Any(e.into()))?;
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE pid = $1", parse_uuid)
-            .fetch_optional(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+            .fetch_optional(db)
+            .await?;
+
         user.ok_or(ModelError::EntityNotFound)
     }
 
@@ -134,11 +129,11 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user  or DB query error
-    pub async fn find_by_username(db: &DatabaseConnection, username: &str) -> ModelResult<Self> {
+    pub async fn find_by_username(db: &PgPool, username: &str) -> ModelResult<Self> {
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE username = $1", username)
-            .fetch_optional(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+            .fetch_optional(db)
+            .await?;
+
         user.ok_or(ModelError::EntityNotFound)
     }
 
@@ -147,11 +142,10 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
-    pub async fn find_by_api_key(db: &DatabaseConnection, api_key: &str) -> ModelResult<Self> {
+    pub async fn find_by_api_key(db: &PgPool, api_key: &str) -> ModelResult<Self> {
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE api_key = $1", api_key)
-            .fetch_optional(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+            .fetch_optional(db)
+            .await?;
         user.ok_or(ModelError::EntityNotFound)
     }
 
@@ -171,10 +165,7 @@ impl Model {
     /// # Errors
     ///
     /// When could not save the user into the DB
-    pub async fn create_with_password(
-        db: &DatabaseConnection,
-        params: &RegisterParams,
-    ) -> ModelResult<Self> {
+    pub async fn create_with_password(db: &PgPool, params: &RegisterParams) -> ModelResult<Self> {
         let password_hash =
             hash::hash_password(&params.password).map_err(|e| ModelError::Any(e.into()))?;
         let pid = Uuid::new_v4();
@@ -187,7 +178,7 @@ impl Model {
             username: params.username.to_string(),
             ..Default::default()
         };
-        user.validate().map_err(sea_orm::DbErr::from)?;
+        user.validate()?;
 
         let user = sqlx::query_as!(
             Self,
@@ -203,9 +194,8 @@ impl Model {
             user.email_verification_sent_at,
             user.email_verified_at
         )
-        .fetch_one(db.get_postgres_connection_pool())
-        .await
-        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        .fetch_one(db)
+        .await?;
 
         Ok(user)
     }
@@ -228,10 +218,7 @@ impl Model {
     /// # Errors
     ///
     /// when has DB query error
-    pub async fn set_email_verification_sent(
-        &mut self,
-        db: &DatabaseConnection,
-    ) -> ModelResult<()> {
+    pub async fn set_email_verification_sent(&mut self, db: &PgPool) -> ModelResult<()> {
         self.email_verification_sent_at = Some(Local::now().naive_local());
         self.email_verification_token = Some(Uuid::new_v4().to_string());
         sqlx::query!(
@@ -239,9 +226,8 @@ impl Model {
             self.email_verification_sent_at,
             self.email_verification_token
         )
-        .execute(db.get_postgres_connection_pool())
-        .await
-        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        .execute(db)
+        .await?;
         Ok(())
     }
 
@@ -257,7 +243,7 @@ impl Model {
     /// # Errors
     ///
     /// when has DB query error
-    pub async fn set_forgot_password_sent(&mut self, db: &DatabaseConnection) -> ModelResult<()> {
+    pub async fn set_forgot_password_sent(&mut self, db: &PgPool) -> ModelResult<()> {
         self.reset_sent_at = Some(Local::now().naive_local());
         self.reset_token = Some(Uuid::new_v4().to_string());
         sqlx::query!(
@@ -265,9 +251,8 @@ impl Model {
             self.reset_sent_at,
             self.reset_token
         )
-        .execute(db.get_postgres_connection_pool())
-        .await
-        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        .execute(db)
+        .await?;
         Ok(())
     }
 
@@ -280,15 +265,14 @@ impl Model {
     /// # Errors
     ///
     /// when has DB query error
-    pub async fn verified(&mut self, db: &DatabaseConnection) -> ModelResult<()> {
+    pub async fn verified(&mut self, db: &PgPool) -> ModelResult<()> {
         self.email_verified_at = Some(Local::now().naive_local());
         sqlx::query!(
             "UPDATE users SET email_verified_at = $1",
             self.email_verified_at
         )
-        .execute(db.get_postgres_connection_pool())
-        .await
-        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        .execute(db)
+        .await?;
         Ok(())
     }
 
@@ -300,11 +284,7 @@ impl Model {
     /// # Errors
     ///
     /// when has DB query error or could not hashed the given password
-    pub async fn reset_password(
-        &mut self,
-        db: &DatabaseConnection,
-        password: &str,
-    ) -> ModelResult<()> {
+    pub async fn reset_password(&mut self, db: &PgPool, password: &str) -> ModelResult<()> {
         self.password = hash::hash_password(password).map_err(|e| ModelError::Any(e.into()))?;
         self.reset_token = None;
         self.reset_sent_at = None;
@@ -314,9 +294,8 @@ impl Model {
             self.reset_token,
             self.reset_sent_at
         )
-        .execute(db.get_postgres_connection_pool())
-        .await
-        .map_err(|e| ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        .execute(db)
+        .await?;
         Ok(())
     }
 }

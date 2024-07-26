@@ -11,14 +11,12 @@ use loco_rs::{
     boot::{create_app, BootResult, StartMode},
     controller::AppRoutes,
     environment::Environment,
-    model,
     prelude::*,
     task::Tasks,
     worker::Processor,
     Result,
 };
-use migration::Migrator;
-use sea_orm::{DatabaseConnection, RuntimeErr};
+use sqlx::PgPool;
 
 use crate::{
     controllers,
@@ -29,7 +27,8 @@ use crate::{
     views,
 };
 
-pub async fn seed_database(db: &DatabaseConnection, users_path: &str) -> Result<()> {
+// TODO make this generic
+pub async fn seed_users(db: &PgPool, users_path: &str) -> Result<()> {
     let users_loader: Vec<serde_json::Value> = serde_yaml::from_reader(File::open(users_path)?)?;
 
     for user in users_loader {
@@ -45,9 +44,8 @@ pub async fn seed_database(db: &DatabaseConnection, users_path: &str) -> Result<
             user.created_at,
             user.updated_at
         )
-        .execute(db.get_postgres_connection_pool())
-        .await
-        .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+        .execute(db)
+        .await?;
     }
 
     Ok(())
@@ -71,7 +69,7 @@ impl Hooks for App {
     }
 
     async fn boot(mode: StartMode, environment: &Environment) -> Result<BootResult> {
-        create_app::<Self, Migrator>(mode, environment).await
+        create_app::<Self>(mode, environment).await
     }
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
@@ -117,23 +115,20 @@ impl Hooks for App {
         tasks.register(tasks::seed::SeedData);
     }
 
-    async fn truncate(db: &DatabaseConnection) -> Result<()> {
-        // TODO automatic mapping of the model error somehow?
-        sqlx::query!("TRUNCATE users")
-            .execute(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+    async fn migrate(db: &PgPool) -> Result<()> {
+        sqlx::migrate!().run(db).await?;
+        Ok(())
+    }
 
-        sqlx::query!("TRUNCATE sets")
-            .execute(db.get_postgres_connection_pool())
-            .await
-            .map_err(|e| model::ModelError::DbErr(DbErr::Query(RuntimeErr::SqlxError(e))))?;
+    async fn truncate(db: &PgPool) -> Result<()> {
+        sqlx::query!("TRUNCATE users").execute(db).await?;
+        sqlx::query!("TRUNCATE sets").execute(db).await?;
 
         Ok(())
     }
 
-    async fn seed(db: &DatabaseConnection, base: &Path) -> Result<()> {
-        seed_database(db, &base.join("users.yaml").display().to_string()).await?;
+    async fn seed(db: &PgPool, base: &Path) -> Result<()> {
+        seed_users(db, &base.join("users.yaml").display().to_string()).await?;
         Ok(())
     }
 }
