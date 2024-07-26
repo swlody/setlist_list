@@ -1,0 +1,24 @@
+---
+source: src/validation.rs
+expression: data.validate()
+---
+Err(
+    ValidationErrors(
+        {
+            "name": Field(
+                [
+                    ValidationError {
+                        code: "length",
+                        message: Some(
+                            "Invalid min characters long.",
+                        ),
+                        params: {
+                            "min": Number(4),
+                            "value": String("foo"),
+                        },
+                    },
+                ],
+            ),
+        },
+    ),
+)
