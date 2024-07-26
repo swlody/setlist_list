@@ -1,5 +1,5 @@
 ---
-source: src/validation.rs
+source: loco/src/validation.rs
 expression: data.validate()
 ---
 Err(
@@ -13,8 +13,8 @@ Err(
                             "Invalid min characters long.",
                         ),
                         params: {
-                            "min": Number(4),
                             "value": String("foo"),
+                            "min": Number(4),
                         },
                     },
                 ],

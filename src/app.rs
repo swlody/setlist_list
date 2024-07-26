@@ -12,7 +12,6 @@ use loco_rs::{
     controller::AppRoutes,
     environment::Environment,
     prelude::*,
-    task::Tasks,
     worker::Processor,
     Result,
 };
@@ -22,7 +21,6 @@ use crate::{
     controllers,
     initializers::{self, minijinja_view_engine::MiniJinjaView},
     models::users,
-    tasks,
     utils::get_username,
     views,
 };
@@ -109,10 +107,6 @@ impl Hooks for App {
 
     fn connect_workers<'a>(_p: &'a mut Processor, _ctx: &'a AppContext) {
         // p.register(DownloadWorker::build(ctx));
-    }
-
-    fn register_tasks(tasks: &mut Tasks) {
-        tasks.register(tasks::seed::SeedData);
     }
 
     async fn migrate(db: &PgPool) -> Result<()> {

@@ -91,8 +91,9 @@ mod tests {
             "verifyToken": "1111-2222-3333-4444",
             "name": "Can render test template",
         });
-        assert_debug_snapshot!(
-            Template::new(&include_dir!("tests/fixtures/email_template/test")).render(&args)
-        );
+        assert_debug_snapshot!(Template::new(&include_dir!(
+            "$CARGO_MANIFEST_DIR/tests/fixtures/email_template/test"
+        ))
+        .render(&args));
     }
 }
