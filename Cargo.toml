@@ -1,5 +1,5 @@
 [workspace]
-members = ["loco/macros", "loco/xtask", "loco/loco-extras"]
+members = ["loco/macros", "loco/loco-extras"]
 
 [workspace.package]
 edition = "2021"
