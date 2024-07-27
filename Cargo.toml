@@ -22,7 +22,7 @@ tokio = { version = "1.33.0", default-features = false }
 async-trait = "0.1.74"
 tracing = "0.1.40"
 chrono = { version = "0.4", features = ["serde"] }
-validator = { version = "0.16.1" }
+validator = "0.16.1"
 uuid = { version = "1.6.0", features = ["v4", "serde"] }
 include_dir = "0.7"
 
@@ -49,7 +49,7 @@ path = "src/bin/main.rs"
 required-features = []
 
 [workspace.dependencies]
-async-trait = { version = "0.1.74" }
+async-trait = "0.1.74"
 axum = { version = "0.7.5", features = ["macros"] }
 tower = "0.4"
 tower-http = { version = "0.5.0", features = [
