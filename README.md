@@ -6,8 +6,8 @@ Built with https://loco.rs
 WIP build:
 
 ```
-npm install --prefix ./assets
-./assets/node_modules/.bin/tailwindcss -c assets/tailwind.config.js -i assets/styles/input.css -o assets/static/dist/output.css
-./assets/node_modules/.bin/webpack -c assets/webpack.config.js --no-devtool --mode development
+bun install --cwd assets
+bun --cwd assets tailwindcss -c tailwind.config.js -i styles/input.css -o static/dist/output.css
+bun build assets/src/main.js --outdir assets/static/dist [--minify] [--sourcemap=linked]
 cargo run start
 ```
