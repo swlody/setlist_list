@@ -47,18 +47,10 @@
 //!```rust
 #![doc = include_str!("././prometheus.rs")]
 //!````
-//! ### Extra Database connection:
-//! ```rust
-#![doc = include_str!("././extra_db.rs")]
-//!````
 //! ### Normalize path:
 //! ```rust
 #![doc = include_str!("././normalize_path.rs")]
 //!````
-#[cfg(feature = "initializer-extra-db")]
-pub mod extra_db;
-#[cfg(feature = "initializer-mongodb")]
-pub mod mongodb;
 #[cfg(feature = "initializer-normalize-path")]
 pub mod normalize_path;
 #[cfg(feature = "initializer-opentelemetry")]
