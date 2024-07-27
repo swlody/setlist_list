@@ -6,7 +6,6 @@
 
 use axum_test::{TestServer, TestServerConfig};
 use lazy_static::lazy_static;
-
 use sqlx::PgPool;
 
 use crate::{
@@ -122,7 +121,6 @@ pub fn cleanup_email() -> Vec<(&'static str, &'static str)> {
 pub async fn boot_test<H: Hooks>() -> Result<BootResult> {
     H::boot(boot::StartMode::ServerOnly, &Environment::Test).await
 }
-
 
 /// Seeds data into the database.
 ///

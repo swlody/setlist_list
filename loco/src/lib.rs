@@ -6,7 +6,6 @@ pub use self::errors::Error;
 mod banner;
 pub mod prelude;
 
-
 pub mod db;
 
 pub mod model;

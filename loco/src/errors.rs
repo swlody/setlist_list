@@ -65,10 +65,8 @@ pub enum Error {
     #[error(transparent)]
     IO(#[from] std::io::Error),
 
-
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),
-
 
     #[error(transparent)]
     MigrateError(#[from] sqlx::migrate::MigrateError),
@@ -104,7 +102,6 @@ pub enum Error {
 
     #[error(transparent)]
     InvalidMethod(#[from] InvalidMethod),
-
 
     // Model
     #[error(transparent)]

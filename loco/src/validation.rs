@@ -42,7 +42,6 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
 use validator::{Validate, ValidationError, ValidationErrors};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -119,7 +118,6 @@ mod tests {
     fn can_validate_email(#[case] test_name: &str, #[case] expected: bool) {
         assert_eq!(is_valid_email(test_name).is_ok(), expected);
     }
-
 
     #[rstest]
     #[case("foo")]
