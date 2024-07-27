@@ -13,8 +13,8 @@ Err(
                             "Invalid min characters long.",
                         ),
                         params: {
-                            "value": String("foo"),
                             "min": Number(4),
+                            "value": String("foo"),
                         },
                     },
                 ],

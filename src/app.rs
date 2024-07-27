@@ -9,6 +9,7 @@ use axum::{
 use loco_rs::{
     app::{AppContext, Hooks, Initializer},
     boot::{create_app, BootResult, StartMode},
+    cache,
     controller::AppRoutes,
     environment::Environment,
     prelude::*,
@@ -107,6 +108,14 @@ impl Hooks for App {
 
     fn connect_workers<'a>(_p: &'a mut Processor, _ctx: &'a AppContext) {
         // p.register(DownloadWorker::build(ctx));
+    }
+
+    async fn after_context(ctx: AppContext) -> Result<AppContext> {
+        Ok(AppContext {
+            // TODO switch to redis?
+            cache: cache::Cache::new(cache::drivers::inmem::new()).into(),
+            ..ctx
+        })
     }
 
     async fn migrate(db: &PgPool) -> Result<()> {

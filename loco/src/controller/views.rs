@@ -1,11 +1,7 @@
-pub mod engines;
 use axum::{async_trait, extract::FromRequestParts, http::request::Parts, Extension};
 use serde::Serialize;
 
 use crate::Result;
-
-#[cfg(feature = "with-db")]
-pub mod pagination;
 
 pub trait ViewRenderer {
     /// Render a view template located by `key`

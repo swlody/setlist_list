@@ -42,7 +42,7 @@ pub enum Error {
     Axum(#[from] axum::http::Error),
 
     #[error(transparent)]
-    Tera(#[from] tera::Error),
+    Jinja(#[from] minijinja::Error),
 
     #[error(transparent)]
     JSON(serde_json::Error),
@@ -72,9 +72,6 @@ pub enum Error {
     #[cfg(feature = "with-db")]
     #[error(transparent)]
     MigrateError(#[from] sqlx::migrate::MigrateError),
-
-    #[error(transparent)]
-    RRgen(#[from] rrgen::Error),
 
     #[error(transparent)]
     ParseAddress(#[from] AddressError),

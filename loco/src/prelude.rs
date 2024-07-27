@@ -17,7 +17,7 @@ pub use crate::{
         format,
         middleware::format::{Format, RespondTo},
         not_found, unauthorized,
-        views::{engines::TeraView, ViewEngine, ViewRenderer},
+        views::{ViewEngine, ViewRenderer},
         Json, Routes,
     },
     errors::Error,

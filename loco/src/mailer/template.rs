@@ -16,7 +16,7 @@
 
 use include_dir::Dir;
 
-use crate::{errors::Error, tera, Result};
+use crate::{errors::Error, template, Result};
 
 /// The filename for the subject template file.
 const SUBJECT: &str = "subject.t";
@@ -66,9 +66,10 @@ impl<'a> Template<'a> {
         let html_t = embedded_file(self.dir, HTML)?;
 
         // TODO(consider): check+consider offloading to tokio async this work
-        let text = tera::render_string(&text_t, locals)?;
-        let html = tera::render_string(&html_t, locals)?;
-        let subject = tera::render_string(&subject_t, locals)?;
+        let env = minijinja::Environment::new();
+        let text = template::render_string(&env, &text_t, locals)?;
+        let html = template::render_string(&env, &html_t, locals)?;
+        let subject = template::render_string(&env, &subject_t, locals)?;
         Ok(Content {
             subject,
             text,

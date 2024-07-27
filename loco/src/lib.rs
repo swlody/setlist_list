@@ -10,7 +10,7 @@ pub mod prelude;
 pub mod db;
 #[cfg(feature = "with-db")]
 pub mod model;
-mod tera;
+mod template;
 
 pub mod app;
 #[cfg(feature = "cli")]

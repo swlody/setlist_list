@@ -456,6 +456,20 @@ pub struct MailerAuth {
     pub password: String,
 }
 
+#[derive(Deserialize)]
+struct Arg {
+    name: String,
+    default: String,
+}
+
+use minijinja::value::ViaDeserialize;
+fn get_env(ViaDeserialize(arg): ViaDeserialize<Arg>) -> String {
+    match std::env::var(arg.name) {
+        Ok(value) => value,
+        Err(_) => arg.default,
+    }
+}
+
 impl Config {
     /// Creates a new configuration instance based on the specified environment.
     ///
@@ -516,7 +530,9 @@ impl Config {
         info!(selected_path =? selected_path, "loading environment from");
 
         let content = fs::read_to_string(selected_path)?;
-        let rendered = crate::tera::render_string(&content, &json!({}))?;
+        let mut env = minijinja::Environment::new();
+        env.add_function("get_env", get_env);
+        let rendered = crate::template::render_string(&env, &content, &json!({}))?;
 
         serde_yaml::from_str(&rendered)
             .map_err(|err| Error::YAMLFile(err, selected_path.to_string_lossy().to_string()))
