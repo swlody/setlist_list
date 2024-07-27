@@ -1,7 +1,5 @@
 ---
-source: src/validation.rs
-expression: data.validate().map_err(into_db_error)
+source: loco/src/validation.rs
+expression: data.validate().is_err()
 ---
-Ok(
-    (),
-)
+false

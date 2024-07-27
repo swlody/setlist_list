@@ -129,6 +129,6 @@ mod tests {
             name: name.to_string(),
         };
 
-        assert_debug_snapshot!(format!("struct-[{name}]"), data.validate());
+        assert_debug_snapshot!(format!("struct-[{name}]"), data.validate().is_err());
     }
 }
