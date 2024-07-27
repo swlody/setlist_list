@@ -4,14 +4,13 @@
 use axum::Router;
 use tracing::{info, trace, warn};
 
-#[cfg(feature = "with-db")]
-use crate::db;
 use crate::{
     app::{AppContext, Hooks},
     banner::print_banner,
     cache,
     config::{self, Config},
     controller::ListRoutes,
+    db,
     environment::Environment,
     errors::Error,
     mailer::{EmailSender, MailerWorker},
@@ -107,7 +106,7 @@ pub async fn create_context<H: Hooks>(environment: &Environment) -> Result<AppCo
              for production. disable with `logger.pretty_backtrace` in your config yaml)"
         );
     }
-    #[cfg(feature = "with-db")]
+
     let db = db::connect(&config.database).await?;
 
     let mailer = if let Some(cfg) = config.mailer.as_ref() {
@@ -118,7 +117,7 @@ pub async fn create_context<H: Hooks>(environment: &Environment) -> Result<AppCo
 
     let ctx = AppContext {
         environment: environment.clone(),
-        #[cfg(feature = "with-db")]
+
         db,
         queue: connect_redis(&config).await,
         storage: Storage::single(storage::drivers::null::new()).into(),
@@ -130,7 +129,6 @@ pub async fn create_context<H: Hooks>(environment: &Environment) -> Result<AppCo
     H::after_context(ctx).await
 }
 
-#[cfg(feature = "with-db")]
 /// Creates an application based on the specified mode and environment.
 ///
 /// # Errors
@@ -142,20 +140,6 @@ pub async fn create_app<H: Hooks>(
 ) -> Result<BootResult> {
     let app_context = create_context::<H>(environment).await?;
     db::converge::<H>(&app_context.db, &app_context.config.database).await?;
-
-    if let Some(pool) = &app_context.queue {
-        redis::converge(pool, &app_context.config.queue).await?;
-    }
-
-    run_app::<H>(&mode, app_context).await
-}
-
-#[cfg(not(feature = "with-db"))]
-pub async fn create_app<H: Hooks>(
-    mode: StartMode,
-    environment: &Environment,
-) -> Result<BootResult> {
-    let app_context = create_context::<H>(environment).await?;
 
     if let Some(pool) = &app_context.queue {
         redis::converge(pool, &app_context.config.queue).await?;

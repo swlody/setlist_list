@@ -1,10 +1,8 @@
+use chrono::NaiveDateTime;
 use loco_rs::model::{ModelError, ModelResult};
 use serde::{Deserialize, Serialize};
 use sqlx::{
-    types::{
-        chrono::{NaiveDate, NaiveDateTime},
-        JsonValue, Uuid,
-    },
+    types::{chrono::NaiveDate, JsonValue, Uuid},
     PgPool,
 };
 

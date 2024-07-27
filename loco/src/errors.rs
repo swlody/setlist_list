@@ -65,11 +65,11 @@ pub enum Error {
     #[error(transparent)]
     IO(#[from] std::io::Error),
 
-    #[cfg(feature = "with-db")]
+
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),
 
-    #[cfg(feature = "with-db")]
+
     #[error(transparent)]
     MigrateError(#[from] sqlx::migrate::MigrateError),
 
@@ -105,7 +105,7 @@ pub enum Error {
     #[error(transparent)]
     InvalidMethod(#[from] InvalidMethod),
 
-    #[cfg(feature = "with-db")]
+
     // Model
     #[error(transparent)]
     Model(#[from] crate::model::ModelError),

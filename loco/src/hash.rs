@@ -63,7 +63,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn can_hah_password() {
+    fn can_hash_password() {
         let pass = "password-1234";
 
         let hash_pass = hash_password(pass).unwrap();

@@ -1,16 +1,10 @@
 //! This module contains the core components and traits for building a web
 //! server application.
-cfg_if::cfg_if! {
-    if #[cfg(feature = "with-db")] {
-        use std::path::Path;
-        use sqlx::PgPool;
-    } else {}
-
-}
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
 use async_trait::async_trait;
 use axum::Router as AxumRouter;
+use sqlx::PgPool;
 
 #[cfg(feature = "channels")]
 use crate::controller::channels::AppChannels;
@@ -37,7 +31,7 @@ use crate::{
 pub struct AppContext {
     /// The environment in which the application is running.
     pub environment: Environment,
-    #[cfg(feature = "with-db")]
+
     /// A database connection used by the application.
     pub db: sqlx::PgPool,
     /// An optional connection pool for Queue, for worker tasks
@@ -185,15 +179,15 @@ pub trait Hooks {
     /// by changing dangerously_truncate to true (default false).
     /// Truncate can be useful when you want to truncate the database before any
     /// test.
-    #[cfg(feature = "with-db")]
+
     async fn truncate(db: &PgPool) -> Result<()>;
 
     // Runs migrations on the database.
-    #[cfg(feature = "with-db")]
+
     async fn migrate(db: &PgPool) -> Result<()>;
 
     /// Seeds the database with initial data.
-    #[cfg(feature = "with-db")]
+
     async fn seed(db: &PgPool, path: &Path) -> Result<()>;
 }
 

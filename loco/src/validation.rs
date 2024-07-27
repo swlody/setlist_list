@@ -42,7 +42,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-#[cfg(feature = "with-db")]
+
 use validator::{Validate, ValidationError, ValidationErrors};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -120,7 +120,7 @@ mod tests {
         assert_eq!(is_valid_email(test_name).is_ok(), expected);
     }
 
-    #[cfg(feature = "with-db")]
+
     #[rstest]
     #[case("foo")]
     #[case("foo-bar")]

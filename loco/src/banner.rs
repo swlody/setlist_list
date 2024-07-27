@@ -27,7 +27,7 @@ pub fn print_banner(boot_result: &BootResult, server_config: &ServeParams) {
 
     println!("environment: {}", ctx.environment.to_string().green());
 
-    #[cfg(feature = "with-db")]
+
     {
         let mut database = Vec::new();
         if config.database.enable_logging {

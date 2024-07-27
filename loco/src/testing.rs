@@ -6,7 +6,7 @@
 
 use axum_test::{TestServer, TestServerConfig};
 use lazy_static::lazy_static;
-#[cfg(feature = "with-db")]
+
 use sqlx::PgPool;
 
 use crate::{
@@ -123,7 +123,7 @@ pub async fn boot_test<H: Hooks>() -> Result<BootResult> {
     H::boot(boot::StartMode::ServerOnly, &Environment::Test).await
 }
 
-#[cfg(feature = "with-db")]
+
 /// Seeds data into the database.
 ///
 ///

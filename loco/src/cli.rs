@@ -62,12 +62,11 @@ enum Commands {
     },
     /// Describe all application endpoints
     Routes {},
-    #[cfg(feature = "with-db")]
+
     /// Display the app version
     Version {},
 }
 
-#[cfg(feature = "with-db")]
 /// run playgroup code
 ///
 /// # Errors
@@ -105,7 +104,6 @@ pub async fn playground<H: Hooks>() -> crate::Result<AppContext> {
 ///     cli::main::<App, Migrator>().await
 /// }
 /// ```
-#[cfg(feature = "with-db")]
 pub async fn main<H: Hooks>() -> eyre::Result<()> {
     let cli: Cli = Cli::parse();
     let environment: Environment = cli.environment.unwrap_or_else(resolve_from_env).into();
@@ -145,64 +143,6 @@ pub async fn main<H: Hooks>() -> eyre::Result<()> {
         Commands::Routes {} => {
             let app_context = create_context::<H>(&environment).await?;
             show_list_endpoints::<H>(&app_context);
-        }
-        Commands::Version {} => {
-            println!("{}", H::app_version(),);
-        }
-    }
-    Ok(())
-}
-
-#[cfg(not(feature = "with-db"))]
-pub async fn main<H: Hooks>() -> eyre::Result<()> {
-    let cli = Cli::parse();
-    let environment: Environment = cli.environment.unwrap_or_else(resolve_from_env).into();
-
-    let config = environment.load()?;
-
-    if !H::init_logger(&config, &environment)? {
-        logger::init::<H>(&config.logger);
-    }
-
-    let task_span = create_root_span(&environment);
-    let _guard = task_span.enter();
-
-    match cli.command {
-        Commands::Start {
-            worker,
-            server_and_worker,
-            binding,
-            port,
-        } => {
-            let start_mode = if worker {
-                StartMode::WorkerOnly
-            } else if server_and_worker {
-                StartMode::ServerAndWorker
-            } else {
-                StartMode::ServerOnly
-            };
-
-            let boot_result = create_app::<H>(start_mode, &environment).await?;
-            let serve_params = ServeParams {
-                port: port.map_or(boot_result.app_context.config.server.port, |p| p),
-                binding: binding.map_or(
-                    boot_result.app_context.config.server.binding.to_string(),
-                    |b| b,
-                ),
-            };
-            start::<H>(boot_result, serve_params).await?;
-        }
-        Commands::Routes {} => {
-            let app_context = create_context::<H>(&environment).await?;
-            show_list_endpoints::<H>(&app_context)
-        }
-        Commands::Task { name, params } => {
-            let vars = task::Vars::from_cli_args(params);
-            let app_context = create_context::<H>(&environment).await?;
-            run_task::<H>(&app_context, name.as_ref(), &vars).await?;
-        }
-        Commands::Generate { component } => {
-            gen::generate::<H>(component.into(), &config)?;
         }
         Commands::Version {} => {
             println!("{}", H::app_version(),);

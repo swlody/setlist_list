@@ -16,7 +16,7 @@ mod backtrace;
 pub mod channels;
 mod describe;
 pub mod format;
-#[cfg(feature = "with-db")]
+
 mod health;
 pub mod middleware;
 mod ping;

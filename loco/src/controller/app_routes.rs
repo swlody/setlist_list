@@ -67,10 +67,8 @@ impl AppRoutes {
     #[must_use]
     pub fn with_default_routes() -> Self {
         let routes = Self::empty().add_route(super::ping::routes());
-        #[cfg(feature = "with-db")]
-        let routes = routes.add_route(super::health::routes());
 
-        routes
+        routes.add_route(super::health::routes())
     }
 
     /// Create an empty instance.

@@ -7,10 +7,8 @@ pub use axum::{
 pub use axum_extra::extract::cookie;
 pub use include_dir::{include_dir, Dir};
 
-#[cfg(all(feature = "auth_jwt", feature = "with-db"))]
+#[cfg(feature = "auth_jwt")]
 pub use crate::controller::middleware::auth;
-#[cfg(feature = "with-db")]
-pub use crate::model::{Authenticable, ModelError, ModelResult};
 pub use crate::{
     app::{AppContext, Initializer},
     controller::{
@@ -23,6 +21,7 @@ pub use crate::{
     errors::Error,
     mailer,
     mailer::Mailer,
+    model::{Authenticable, ModelError, ModelResult},
     validation::{self, Validatable},
     validator::Validate,
     worker::{self, AppWorker},
