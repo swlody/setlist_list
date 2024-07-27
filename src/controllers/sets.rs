@@ -5,6 +5,7 @@ use auth::JWTWithUser;
 use axum::{debug_handler, http::uri::PathAndQuery};
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{
     initializers::minijinja_view_engine::MiniJinjaView,
@@ -30,7 +31,7 @@ impl Params {
     }
 }
 
-async fn load_item(ctx: &AppContext, id: i32) -> Result<sets::Model> {
+async fn load_item(ctx: &AppContext, id: Uuid) -> Result<sets::Model> {
     Ok(sets::Model::find_by_id(&ctx.db, id).await?)
 }
 
@@ -41,7 +42,7 @@ pub async fn list(
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
     let user_name = get_username(jwt_user).unwrap_or_default();
-    let item = sets::Model::list(&ctx.db).await;
+    let item = sets::Model::list_all(&ctx.db).await;
     if let Ok(item) = item {
         views::sets::list(&v, &item, &user_name)
     } else {
@@ -65,7 +66,7 @@ pub async fn new(
 
 #[debug_handler]
 pub async fn update(
-    Path(id): Path<i32>,
+    Path(id): Path<Uuid>,
     State(ctx): State<AppContext>,
     Json(params): Json<Params>,
 ) -> Result<Response> {
@@ -78,7 +79,7 @@ pub async fn update(
 #[debug_handler]
 pub async fn edit(
     jwt_user: Option<JWTWithUser<users::Model>>,
-    Path(id): Path<i32>,
+    Path(id): Path<Uuid>,
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
@@ -98,7 +99,7 @@ pub async fn edit(
 #[debug_handler]
 pub async fn show(
     jwt_user: Option<JWTWithUser<users::Model>>,
-    path: Option<Path<i32>>,
+    path: Option<Path<Uuid>>,
     ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
@@ -121,9 +122,10 @@ pub async fn add(
     State(ctx): State<AppContext>,
     Json(params): Json<Params>,
 ) -> Result<Response> {
-    let uuid = uuid::Uuid::parse_str(&auth.claims.pid).map_err(|e| ModelError::Any(e.into()))?;
+    let uuid = uuid::Uuid::parse_str(&auth.claims.id).map_err(|e| ModelError::Any(e.into()))?;
     let mut item = sets::Model {
-        creator_pid: uuid,
+        id: Uuid::now_v7(),
+        creator_id: uuid,
         ..Default::default()
     };
     params.update(&mut item);
@@ -132,7 +134,7 @@ pub async fn add(
 }
 
 #[debug_handler]
-pub async fn remove(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
+pub async fn remove(Path(id): Path<Uuid>, State(ctx): State<AppContext>) -> Result<Response> {
     sets::Model::delete_by_id(&ctx.db, id).await?;
     hx_redirect(&PathAndQuery::from_static("/sets"))
 }

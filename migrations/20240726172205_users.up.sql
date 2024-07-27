@@ -3,8 +3,7 @@ CREATE TABLE IF NOT EXISTS users
 (
     created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id SERIAL,
-    pid uuid NOT NULL,
+    id uuid NOT NULL,
     email character varying NOT NULL,
     password character varying NOT NULL,
     api_key character varying NOT NULL,

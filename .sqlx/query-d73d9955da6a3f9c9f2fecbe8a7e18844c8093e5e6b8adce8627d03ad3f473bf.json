@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM sets WHERE creator_pid = $1",
+  "query": "SELECT * FROM sets WHERE creator_id = $1",
   "describe": {
     "columns": [
       {
@@ -16,7 +16,7 @@
       {
         "ordinal": 2,
         "name": "id",
-        "type_info": "Int4"
+        "type_info": "Uuid"
       },
       {
         "ordinal": 3,
@@ -40,7 +40,7 @@
       },
       {
         "ordinal": 7,
-        "name": "creator_pid",
+        "name": "creator_id",
         "type_info": "Uuid"
       }
     ],
@@ -60,5 +60,5 @@
       false
     ]
   },
-  "hash": "90ef1b2890a6ee6bf3d46f75f5c4b287e433b8c9e883a8fef9c069c28d0dc55a"
+  "hash": "d73d9955da6a3f9c9f2fecbe8a7e18844c8093e5e6b8adce8627d03ad3f473bf"
 }

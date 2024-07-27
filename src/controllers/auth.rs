@@ -70,10 +70,10 @@ async fn verify(
     let mut user = users::Model::find_by_verification_token(&ctx.db, &params.token).await?;
 
     if user.email_verified_at.is_some() {
-        tracing::info!(pid = user.pid.to_string(), "user already verified");
+        tracing::info!(id = user.id.to_string(), "user already verified");
     } else {
         user.verified(&ctx.db).await?;
-        tracing::info!(pid = user.pid.to_string(), "user verified");
+        tracing::info!(id = user.id.to_string(), "user verified");
     }
 
     format::json(())

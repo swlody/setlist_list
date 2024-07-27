@@ -6,6 +6,7 @@ Built with https://loco.rs
 WIP build:
 
 ```
+cargo sqlx database create
 bun install --cwd assets
 bun --cwd assets tailwindcss -c tailwind.config.js -i styles/input.css -o static/dist/output.css
 bun build assets/src/main.js --outdir assets/static/dist [--minify] [--sourcemap=linked]

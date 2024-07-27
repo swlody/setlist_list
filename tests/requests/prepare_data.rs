@@ -7,7 +7,7 @@ const USER_PASSWORD: &str = "1234";
 
 pub struct LoggedInUser {
     pub user: users::Model,
-    pub token: String,
+    pub _token: String,
 }
 
 pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedInUser {
@@ -56,11 +56,11 @@ pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedIn
         user: users::Model::find_by_email(&ctx.db, USER_EMAIL)
             .await
             .unwrap(),
-        token: token,
+        _token: token,
     }
 }
 
-pub fn auth_header(token: &str) -> (HeaderName, HeaderValue) {
+pub fn _auth_header(token: &str) -> (HeaderName, HeaderValue) {
     let auth_header_value = HeaderValue::from_str(&format!("Bearer {}", &token)).unwrap();
 
     (HeaderName::from_static("authorization"), auth_header_value)

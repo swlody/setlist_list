@@ -19,7 +19,7 @@ Ok(
             x5t_s256: None,
         },
         claims: UserClaims {
-            pid: "pid",
+            id: "id",
             exp: EXP,
         },
     },

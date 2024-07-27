@@ -21,7 +21,7 @@ lazy_static! {
     pub static ref CLEANUP_USER_MODEL: Vec<(&'static str, &'static str)> = vec![
         (
             r"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})",
-            "PID"
+            "ID"
         ),
         (r"password: (.*{60}),", "password: \"PASSWORD\","),
         (r"([A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*)","TOKEN")
@@ -57,7 +57,7 @@ lazy_static! {
 /// The provided example demonstrates how to efficiently clean up a user model.
 /// This process is particularly valuable when you need to capture a snapshot of
 /// user model data that includes dynamic elements such as incrementing IDs,
-/// automatically generated PIDs, creation/update timestamps, and similar
+/// automatically generated IDs, creation/update timestamps, and similar
 /// attributes.
 ///
 /// ```rust,ignore

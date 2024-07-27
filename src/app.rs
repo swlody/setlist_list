@@ -33,9 +33,8 @@ pub async fn seed_users(db: &PgPool, users_path: &str) -> Result<()> {
     for user in users_loader {
         let user: users::Model = serde_json::from_value(user)?;
         sqlx::query!(
-            "INSERT into USERS (id, pid, email, password, api_key, username, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+            "INSERT into USERS (id, email, password, api_key, username, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             user.id,
-            user.pid,
             user.email,
             user.password,
             user.api_key,

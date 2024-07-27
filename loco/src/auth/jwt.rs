@@ -16,7 +16,7 @@ const JWT_ALGORITHM: Algorithm = Algorithm::HS512;
 /// Represents the claims associated with a user JWT.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserClaims {
-    pub pid: String,
+    pub id: String,
     exp: usize,
     claims: Option<Value>,
 }
@@ -62,18 +62,18 @@ impl JWT {
     /// ```rust
     /// use loco_rs::auth;
     ///
-    /// auth::jwt::JWT::new("PqRwLF2rhHe8J22oBeHy").generate_token(&604800, "PID".to_string(), None);
+    /// auth::jwt::JWT::new("PqRwLF2rhHe8J22oBeHy").generate_token(&604800, "ID".to_string(), None);
     /// ```
     pub fn generate_token(
         &self,
         expiration: &u64,
-        pid: String,
+        id: String,
         claims: Option<Value>,
     ) -> JWTResult<String> {
         #[allow(clippy::cast_possible_truncation)]
         let exp = (get_current_timestamp() + expiration) as usize;
 
-        let claims = UserClaims { pid, exp, claims };
+        let claims = UserClaims { id, exp, claims };
 
         let token = encode(
             &Header::new(self.algorithm),
@@ -130,7 +130,7 @@ mod tests {
     ) {
         let jwt = JWT::new("PqRwLF2rhHe8J22oBeHy");
         let token = jwt
-            .generate_token(&expiration, "pid".to_string(), claims)
+            .generate_token(&expiration, "id".to_string(), claims)
             .unwrap();
 
         std::thread::sleep(std::time::Duration::from_secs(3));

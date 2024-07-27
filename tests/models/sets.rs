@@ -20,7 +20,7 @@ async fn test_model() {
 
     // query your model, e.g.:
     //
-    // let item = models::posts::Model::find_by_pid(
+    // let item = models::posts::Model::find_by_id(
     //     &boot.app_context.db,
     //     "11111111-1111-1111-1111-111111111111",
     // )

@@ -10,38 +10,38 @@ use sqlx::{
 pub struct Model {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub id: i32,
+    pub id: Uuid,
     pub band_name: Option<String>,
     pub date: NaiveDate,
     pub venue: Option<String>,
     pub setlist: Option<JsonValue>,
-    pub creator_pid: Uuid,
+    pub creator_id: Uuid,
 }
 
 impl Model {
-    pub async fn list_by_creator_pid(db: &PgPool, pid: Uuid) -> ModelResult<Vec<Self>> {
+    pub async fn list_by_creator_id(db: &PgPool, id: Uuid) -> ModelResult<Vec<Self>> {
         Ok(
-            sqlx::query_as!(Self, "SELECT * FROM sets WHERE creator_pid = $1", pid)
+            sqlx::query_as!(Self, "SELECT * FROM sets WHERE creator_id = $1", id)
                 .fetch_all(db)
                 .await?,
         )
     }
 
-    pub async fn find_by_id(db: &PgPool, id: i32) -> ModelResult<Self> {
+    pub async fn find_by_id(db: &PgPool, id: Uuid) -> ModelResult<Self> {
         let set = sqlx::query_as!(Self, "SELECT * FROM sets WHERE id = $1", id)
             .fetch_optional(db)
             .await?;
         set.ok_or(ModelError::EntityNotFound)
     }
 
-    pub async fn delete_by_id(db: &PgPool, id: i32) -> ModelResult<()> {
+    pub async fn delete_by_id(db: &PgPool, id: Uuid) -> ModelResult<()> {
         sqlx::query!("DELETE FROM sets WHERE id = $1", id)
             .execute(db)
             .await?;
         Ok(())
     }
 
-    pub async fn list(db: &PgPool) -> ModelResult<Vec<Self>> {
+    pub async fn list_all(db: &PgPool) -> ModelResult<Vec<Self>> {
         Ok(sqlx::query_as!(Self, "SELECT * FROM sets")
             .fetch_all(db)
             .await?)
@@ -49,12 +49,13 @@ impl Model {
 
     pub async fn insert(&self, db: &PgPool) -> ModelResult<()> {
         sqlx::query!(
-            "INSERT INTO sets (band_name, date, venue, setlist, creator_pid) VALUES ($1, $2, $3, $4, $5)",
+            "INSERT INTO sets (id, band_name, date, venue, setlist, creator_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            self.id,
             self.band_name,
             self.date,
             self.venue,
             self.setlist,
-            self.creator_pid
+            self.creator_id
         )
         .execute(db)
         .await?;

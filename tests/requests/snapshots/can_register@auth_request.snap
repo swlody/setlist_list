@@ -6,16 +6,15 @@ Ok(
     Model {
         created_at: DATE,
         updated_at: DATE,
-        id: ID
-        pid: PID,
+        id: ID,
         email: "test@loco.com",
         password: "PASSWORD",
-        api_key: "lo-PID",
+        api_key: "lo-ID",
         username: "loco",
         reset_token: None,
         reset_sent_at: None,
         email_verification_token: Some(
-            "PID",
+            "ID",
         ),
         email_verification_sent_at: Some(
             DATE,

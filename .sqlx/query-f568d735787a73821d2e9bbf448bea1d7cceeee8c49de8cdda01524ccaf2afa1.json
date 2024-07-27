@@ -9,7 +9,7 @@
         "Date",
         "Varchar",
         "Json",
-        "Int4"
+        "Uuid"
       ]
     },
     "nullable": []

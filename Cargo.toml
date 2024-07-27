@@ -23,7 +23,7 @@ async-trait = "0.1.74"
 tracing = "0.1.40"
 chrono = { version = "0.4", features = ["serde"] }
 validator = "0.16.1"
-uuid = { version = "1.6.0", features = ["v4", "serde"] }
+uuid = { version = "1.6.0", features = ["v4", "v7", "serde"] }
 include_dir = "0.7"
 
 cookie = "0.18.1"

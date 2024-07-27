@@ -16,55 +16,50 @@
       {
         "ordinal": 2,
         "name": "id",
-        "type_info": "Int4"
-      },
-      {
-        "ordinal": 3,
-        "name": "pid",
         "type_info": "Uuid"
       },
       {
-        "ordinal": 4,
+        "ordinal": 3,
         "name": "email",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 5,
+        "ordinal": 4,
         "name": "password",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 6,
+        "ordinal": 5,
         "name": "api_key",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 7,
+        "ordinal": 6,
         "name": "username",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 8,
+        "ordinal": 7,
         "name": "reset_token",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 9,
+        "ordinal": 8,
         "name": "reset_sent_at",
         "type_info": "Timestamp"
       },
       {
-        "ordinal": 10,
+        "ordinal": 9,
         "name": "email_verification_token",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 11,
+        "ordinal": 10,
         "name": "email_verification_sent_at",
         "type_info": "Timestamp"
       },
       {
-        "ordinal": 12,
+        "ordinal": 11,
         "name": "email_verified_at",
         "type_info": "Timestamp"
       }
@@ -75,7 +70,6 @@
       ]
     },
     "nullable": [
-      false,
       false,
       false,
       false,

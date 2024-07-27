@@ -9,14 +9,14 @@
 //!
 //! #[derive(Serialize)]
 //! pub struct TestResponse {
-//!     pub pid: String,
+//!     pub id: String,
 //! }
 //!
 //! async fn current(
 //!     auth: auth::JWT,
 //!     State(ctx): State<AppContext>,
 //! ) -> Result<Response> {
-//!     format::json(TestResponse{ pid: auth.claims.pid})
+//!     format::json(TestResponse{ id: auth.claims.id})
 //! }
 //! ```
 use std::collections::HashMap;
@@ -71,7 +71,7 @@ where
 
         match auth::jwt::JWT::new(&jwt_secret.secret).validate(&token) {
             Ok(claims) => {
-                let user = T::find_by_claims_key(&ctx.db, &claims.claims.pid)
+                let user = T::find_by_claims_key(&ctx.db, &claims.claims.id)
                     .await
                     .map_err(|_| Error::Unauthorized("token is not valid".to_string()))?;
                 Ok(Self {

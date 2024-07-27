@@ -9,8 +9,7 @@ use sqlx::PgPool;
 pub struct Model {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub id: i32,
-    pub pid: Uuid,
+    pub id: Uuid,
     pub email: String,
     pub password: String,
     pub api_key: String,
@@ -62,7 +61,7 @@ impl Authenticable for Model {
     }
 
     async fn find_by_claims_key(db: &PgPool, claims_key: &str) -> ModelResult<Self> {
-        Self::find_by_pid(db, claims_key).await
+        Self::find_by_id(db, claims_key).await
     }
 }
 
@@ -110,14 +109,14 @@ impl Model {
         user.ok_or(ModelError::EntityNotFound)
     }
 
-    /// finds a user by the provided pid
+    /// finds a user by the provided id
     ///
     /// # Errors
     ///
     /// When could not find user  or DB query error
-    pub async fn find_by_pid(db: &PgPool, pid: &str) -> ModelResult<Self> {
-        let parse_uuid = Uuid::parse_str(pid).map_err(|e| ModelError::Any(e.into()))?;
-        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE pid = $1", parse_uuid)
+    pub async fn find_by_id(db: &PgPool, id: &str) -> ModelResult<Self> {
+        let parse_uuid = Uuid::parse_str(id).map_err(|e| ModelError::Any(e.into()))?;
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE id = $1", parse_uuid)
             .fetch_optional(db)
             .await?;
 
@@ -168,10 +167,10 @@ impl Model {
     pub async fn create_with_password(db: &PgPool, params: &RegisterParams) -> ModelResult<Self> {
         let password_hash =
             hash::hash_password(&params.password).map_err(|e| ModelError::Any(e.into()))?;
-        let pid = Uuid::new_v4();
+        let id = Uuid::now_v7();
         let api_key = format!("lo-{}", Uuid::new_v4());
         let user = Self {
-            pid,
+            id,
             email: params.email.to_string(),
             password: password_hash,
             api_key,
@@ -182,8 +181,8 @@ impl Model {
 
         let user = sqlx::query_as!(
             Self,
-            "INSERT into USERS (pid, email, password, api_key, username, reset_token, reset_sent_at, email_verification_token, email_verification_sent_at, email_verified_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
-            user.pid,
+            "INSERT into USERS (id, email, password, api_key, username, reset_token, reset_sent_at, email_verification_token, email_verification_sent_at, email_verified_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
+            user.id,
             user.email,
             user.password,
             user.api_key,
@@ -206,7 +205,7 @@ impl Model {
     ///
     /// when could not convert user claims to jwt token
     pub fn generate_jwt(&self, secret: &str, expiration: &u64) -> ModelResult<String> {
-        Ok(jwt::JWT::new(secret).generate_token(expiration, self.pid.to_string(), None)?)
+        Ok(jwt::JWT::new(secret).generate_token(expiration, self.id.to_string(), None)?)
     }
 
     /// Sets the email verification information for the user and
