@@ -136,18 +136,6 @@ impl Model {
         user.ok_or(ModelError::EntityNotFound)
     }
 
-    /// finds a user by the provided api key
-    ///
-    /// # Errors
-    ///
-    /// When could not find user by the given token or DB query error
-    pub async fn find_by_api_key(db: &PgPool, api_key: &str) -> ModelResult<Self> {
-        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE api_key = $1", api_key)
-            .fetch_optional(db)
-            .await?;
-        user.ok_or(ModelError::EntityNotFound)
-    }
-
     /// Verifies whether the provided plain password matches the hashed password
     ///
     /// # Errors
