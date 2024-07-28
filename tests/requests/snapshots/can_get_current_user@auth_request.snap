@@ -1,8 +1,0 @@
----
-source: tests/requests/user.rs
-expression: "(response.status_code(), response.text())"
----
-(
-    200,
-    "{\"id\":\"ID\",\"username\":\"loco\",\"email\":\"test@loco.com\"}",
-)
