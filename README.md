@@ -3,12 +3,18 @@
 
 Built with https://loco.rs
 
-WIP build:
+WIP build (development env):
 
-```
-cargo sqlx database create
+```sh
+docker run -d -p 5432:5432 \
+  -e POSTGRES_DB=setlist_list_development \
+  -e POSTGRES_USER=loco \
+  -e POSTGRES_PASSWORD="loco" \
+  postgres:latest
+docker run -p 6379:6379 -d redis redis-server
+cargo sqlx database setup
 bun install --cwd assets
-bun --cwd assets tailwindcss -c tailwind.config.js -i styles/input.css -o static/dist/output.css
-bun build assets/src/main.js --outdir assets/static/dist [--minify] [--sourcemap=linked]
+bun --cwd assets tailwindcss -c tailwind.config.js -i styles/input.css -o static/dist/output.css [--minify]
+bun build assets/src/main.js --outdir assets/static/dist --sourcemap=linked [--minify]
 cargo run start
 ```

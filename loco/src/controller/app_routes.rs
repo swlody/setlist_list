@@ -2,7 +2,7 @@
 //! configuring routes in an Axum application. It allows you to define route
 //! prefixes, add routes, and configure middlewares for the application.
 
-use std::{fmt, path::PathBuf, time::Duration};
+use std::{fmt, path::PathBuf, str::FromStr as _, time::Duration};
 
 use axum::{http, response::IntoResponse, Router as AXRouter};
 use lazy_static::lazy_static;
@@ -351,10 +351,11 @@ impl AppRoutes {
         app: AXRouter<AppContext>,
         limit: &config::LimitPayloadMiddleware,
     ) -> Result<AXRouter<AppContext>> {
+        #[allow(clippy::cast_possible_truncation)]
         let app = app.layer(axum::extract::DefaultBodyLimit::max(
             byte_unit::Byte::from_str(&limit.body_limit)
                 .map_err(Box::from)?
-                .get_bytes() as usize,
+                .as_u64() as usize,
         ));
         tracing::info!(
             data = &limit.body_limit,

@@ -42,7 +42,7 @@ server:
     # Timeout for incoming requests middleware. requests that take more time from the configuration will cute and 408 status code will returned.
     timeout_request:
       # Enable/Disable the middleware.
-      enable: false
+      enable: true
       # Duration time in milliseconds.
       timeout: 5000
     cors:
@@ -106,7 +106,7 @@ database:
   # Database connection URI
   uri: {{ get_env(name="DATABASE_URL", default="postgres://loco:loco@localhost:5432/setlist_list_development") }}
   # When enabled, the sql query will be logged.
-  enable_logging: false
+  enable_logging: true
   # Set the timeout duration when acquiring a connection.
   connect_timeout: 500
   # Set the idle duration before closing a connection.
