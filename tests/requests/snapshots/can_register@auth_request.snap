@@ -9,12 +9,12 @@ Ok(
         id: ID,
         email: "test@loco.com",
         password: "PASSWORD",
-        api_key: "lo-ID",
+        api_key: ID,
         username: "loco",
         reset_token: None,
         reset_sent_at: None,
         email_verification_token: Some(
-            "ID",
+            ID,
         ),
         email_verification_sent_at: Some(
             DATE,

@@ -24,6 +24,7 @@ pub struct Params {
 
 impl Params {
     fn update(&self, item: &mut sets::Model) {
+        item.updated_at = chrono::Utc::now().naive_utc();
         item.band_name.clone_from(&self.band_name);
         item.date = self.date;
         item.venue.clone_from(&self.venue);

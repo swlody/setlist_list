@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::offset::Local;
+use chrono::offset::Utc;
 use loco_rs::{auth::jwt, hash, prelude::*};
 use serde::{Deserialize, Serialize};
 use sqlx::types::{chrono::NaiveDateTime, Uuid};
@@ -12,11 +12,11 @@ pub struct Model {
     pub id: Uuid,
     pub email: String,
     pub password: String,
-    pub api_key: String,
+    pub api_key: Uuid,
     pub username: String,
-    pub reset_token: Option<String>,
+    pub reset_token: Option<Uuid>,
     pub reset_sent_at: Option<NaiveDateTime>,
-    pub email_verification_token: Option<String>,
+    pub email_verification_token: Option<Uuid>,
     pub email_verification_sent_at: Option<NaiveDateTime>,
     pub email_verified_at: Option<NaiveDateTime>,
 }
@@ -54,6 +54,7 @@ impl Validatable for Model {
 #[async_trait]
 impl Authenticable for Model {
     async fn find_by_api_key(db: &PgPool, api_key: &str) -> ModelResult<Self> {
+        let api_key = Uuid::parse_str(api_key).map_err(|e| ModelError::Any(Box::new(e)))?;
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE api_key = $1", api_key)
             .fetch_optional(db)
             .await?;
@@ -84,7 +85,7 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
-    pub async fn find_by_verification_token(db: &PgPool, token: &str) -> ModelResult<Self> {
+    pub async fn find_by_verification_token(db: &PgPool, token: Uuid) -> ModelResult<Self> {
         let user = sqlx::query_as!(
             Self,
             "SELECT * FROM users WHERE email_verification_token = $1",
@@ -101,7 +102,7 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
-    pub async fn find_by_reset_token(db: &PgPool, token: &str) -> ModelResult<Self> {
+    pub async fn find_by_reset_token(db: &PgPool, token: Uuid) -> ModelResult<Self> {
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE reset_token = $1", token)
             .fetch_optional(db)
             .await?;
@@ -156,7 +157,7 @@ impl Model {
         let password_hash =
             hash::hash_password(&params.password).map_err(|e| ModelError::Any(e.into()))?;
         let id = Uuid::now_v7();
-        let api_key = format!("lo-{}", Uuid::new_v4());
+        let api_key = Uuid::new_v4();
         let user = Self {
             id,
             email: params.email.to_string(),
@@ -206,12 +207,14 @@ impl Model {
     ///
     /// when has DB query error
     pub async fn set_email_verification_sent(&mut self, db: &PgPool) -> ModelResult<()> {
-        self.email_verification_sent_at = Some(Local::now().naive_local());
-        self.email_verification_token = Some(Uuid::new_v4().to_string());
+        self.email_verification_sent_at = Some(Utc::now().naive_utc());
+        self.email_verification_token = Some(Uuid::new_v4());
+        self.updated_at = Utc::now().naive_utc();
         sqlx::query!(
-            "UPDATE users SET email_verification_sent_at = $1, email_verification_token = $2",
+            "UPDATE users SET email_verification_sent_at = $1, email_verification_token = $2, updated_at = $3",
             self.email_verification_sent_at,
-            self.email_verification_token
+            self.email_verification_token,
+            self.updated_at
         )
         .execute(db)
         .await?;
@@ -231,12 +234,14 @@ impl Model {
     ///
     /// when has DB query error
     pub async fn set_forgot_password_sent(&mut self, db: &PgPool) -> ModelResult<()> {
-        self.reset_sent_at = Some(Local::now().naive_local());
-        self.reset_token = Some(Uuid::new_v4().to_string());
+        self.reset_sent_at = Some(Utc::now().naive_utc());
+        self.reset_token = Some(Uuid::new_v4());
+        self.updated_at = Utc::now().naive_utc();
         sqlx::query!(
-            "UPDATE users SET reset_sent_at = $1, reset_token = $2",
+            "UPDATE users SET reset_sent_at = $1, reset_token = $2, updated_at = $3",
             self.reset_sent_at,
-            self.reset_token
+            self.reset_token,
+            self.updated_at
         )
         .execute(db)
         .await?;
@@ -253,10 +258,13 @@ impl Model {
     ///
     /// when has DB query error
     pub async fn verified(&mut self, db: &PgPool) -> ModelResult<()> {
-        self.email_verified_at = Some(Local::now().naive_local());
+        // TODO modified at?
+        self.email_verified_at = Some(Utc::now().naive_utc());
+        self.updated_at = Utc::now().naive_utc();
         sqlx::query!(
-            "UPDATE users SET email_verified_at = $1",
-            self.email_verified_at
+            "UPDATE users SET email_verified_at = $1, updated_at = $2",
+            self.email_verified_at,
+            self.updated_at
         )
         .execute(db)
         .await?;
@@ -275,11 +283,13 @@ impl Model {
         self.password = hash::hash_password(password).map_err(|e| ModelError::Any(e.into()))?;
         self.reset_token = None;
         self.reset_sent_at = None;
+        self.updated_at = Utc::now().naive_utc();
         sqlx::query!(
-            "UPDATE users SET password = $1, reset_token = $2, reset_sent_at = $3",
+            "UPDATE users SET password = $1, reset_token = $2, reset_sent_at = $3, updated_at = $4",
             self.password,
             self.reset_token,
-            self.reset_sent_at
+            self.reset_sent_at,
+            self.updated_at
         )
         .execute(db)
         .await?;

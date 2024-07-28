@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET password = $1, reset_token = $2, reset_sent_at = $3, updated_at = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid",
+        "Timestamp",
+        "Timestamp"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "bdf5a51d25948d6d2f8250db76aa95d0fff8de82d7769a419b02437c88635951"
+}

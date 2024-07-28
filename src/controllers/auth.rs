@@ -5,6 +5,7 @@ use ::cookie::CookieBuilder;
 use axum::{debug_handler, http::uri::PathAndQuery};
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{
     initializers::minijinja_view_engine::MiniJinjaView,
@@ -18,7 +19,7 @@ use crate::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VerifyParams {
-    pub token: String,
+    pub token: Uuid,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -28,7 +29,7 @@ pub struct ForgotParams {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ResetParams {
-    pub token: String,
+    pub token: Uuid,
     pub password: String,
 }
 
@@ -67,7 +68,7 @@ async fn verify(
     State(ctx): State<AppContext>,
     Json(params): Json<VerifyParams>,
 ) -> Result<Response> {
-    let mut user = users::Model::find_by_verification_token(&ctx.db, &params.token).await?;
+    let mut user = users::Model::find_by_verification_token(&ctx.db, params.token).await?;
 
     if user.email_verified_at.is_some() {
         tracing::info!(id = user.id.to_string(), "user already verified");
@@ -104,7 +105,7 @@ async fn forgot(
 /// reset user password by the given parameters
 #[debug_handler]
 async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -> Result<Response> {
-    let Ok(mut user) = users::Model::find_by_reset_token(&ctx.db, &params.token).await else {
+    let Ok(mut user) = users::Model::find_by_reset_token(&ctx.db, params.token).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
         tracing::info!("reset token not found");
