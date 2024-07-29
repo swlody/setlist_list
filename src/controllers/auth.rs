@@ -2,7 +2,7 @@
 use std::time::SystemTime;
 
 use ::cookie::CookieBuilder;
-use axum::{debug_handler, http::uri::PathAndQuery};
+use axum::{debug_handler, extract::Query, http::uri::PathAndQuery};
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -10,10 +10,8 @@ use uuid::Uuid;
 use crate::{
     initializers::minijinja_view_engine::MiniJinjaView,
     mailers::auth::AuthMailer,
-    models::users,
-    models::users::{LoginParams, RegisterParams},
-    utils::get_username,
-    utils::{hx_redirect, hx_redirect_with_cookies},
+    models::users::{self, LoginParams, RegisterParams},
+    utils::{get_username, hx_redirect, redirect_with_cookies},
     views,
 };
 
@@ -58,26 +56,53 @@ async fn register(
 
     AuthMailer::send_welcome(&ctx, &user).await?;
 
-    hx_redirect(&PathAndQuery::from_static("/"))
+    hx_redirect(&PathAndQuery::from_static("/register/success"))
+}
+
+fn login_cookie_redirect(ctx: &AppContext, user: &users::Model) -> Result<Response> {
+    let jwt_secret = ctx.config.get_jwt_config()?;
+
+    let token = user
+        .generate_jwt(&jwt_secret.secret, &jwt_secret.expiration)
+        .or_else(|_| unauthorized("unauthorized!"))?;
+
+    // TODO remove unwraps (should never fail but still)
+    let now = SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_secs();
+    let jwt_expiration = i64::try_from(now + jwt_secret.expiration).unwrap();
+    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration).unwrap();
+
+    let cookie = CookieBuilder::new("token", token)
+        .path("/")
+        .expires(expiry_time)
+        .http_only(true)
+        .secure(true)
+        .same_site(cookie::SameSite::Lax)
+        .build();
+
+    redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie])
 }
 
 /// Verify register user. if the user not verified his email, he can't login to
 /// the system.
 #[debug_handler]
 async fn verify(
+    ViewEngine(v): ViewEngine<MiniJinjaView>,
     State(ctx): State<AppContext>,
-    Json(params): Json<VerifyParams>,
+    Query(VerifyParams { token }): Query<VerifyParams>,
 ) -> Result<Response> {
-    let mut user = users::Model::find_by_verification_token(&ctx.db, params.token).await?;
+    let mut user = users::Model::find_by_verification_token(&ctx.db, token).await?;
 
     if user.email_verified_at.is_some() {
         tracing::info!(id = user.id.to_string(), "user already verified");
+        views::index::unauthorized(&v)
     } else {
         user.verified(&ctx.db).await?;
         tracing::info!(id = user.id.to_string(), "user verified");
+        login_cookie_redirect(&ctx, &user)
     }
-
-    format::json(())
 }
 
 /// In case the user forgot his password  this endpoints generate a forgot token
@@ -122,35 +147,15 @@ async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -
 async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -> Result<Response> {
     let user = users::Model::find_by_email(&ctx.db, &params.email).await?;
 
-    let valid = user.verify_password(&params.password);
-
-    if !valid {
+    if !user.verify_password(&params.password) {
         return unauthorized("unauthorized!");
     }
 
-    let jwt_secret = ctx.config.get_jwt_config()?;
+    if user.email_verified_at.is_none() {
+        return unauthorized("unauthorized! email not verified");
+    }
 
-    let token = user
-        .generate_jwt(&jwt_secret.secret, &jwt_secret.expiration)
-        .or_else(|_| unauthorized("unauthorized!"))?;
-
-    // TODO remove unwraps (should never fail but still)
-    let now = SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .expect("Time went backwards")
-        .as_secs();
-    let jwt_expiration = i64::try_from(now + jwt_secret.expiration).unwrap();
-    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration).unwrap();
-
-    let cookie = CookieBuilder::new("token", token)
-        .path("/")
-        .expires(expiry_time)
-        .http_only(true)
-        .secure(true)
-        .same_site(cookie::SameSite::Lax)
-        .build();
-
-    hx_redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie])
+    login_cookie_redirect(&ctx, &user)
 }
 
 #[debug_handler]
@@ -168,7 +173,7 @@ async fn logout(_auth: auth::JWT, State(_ctx): State<AppContext>) -> Result<Resp
         .same_site(cookie::SameSite::None)
         .build();
 
-    hx_redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie])
+    redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie])
 }
 
 pub async fn login_page(
@@ -179,11 +184,20 @@ pub async fn login_page(
     views::auth::login(&v, &user_name)
 }
 
+pub async fn registration_success_page(
+    jwt_user: Option<auth::JWTWithUser<users::Model>>,
+    ViewEngine(v): ViewEngine<MiniJinjaView>,
+) -> Result<impl IntoResponse> {
+    let user_name = get_username(jwt_user).unwrap_or_default();
+    views::auth::registration_success(&v, &user_name)
+}
+
 pub fn routes() -> Routes {
     Routes::new()
         .add("/login", get(login_page).post(login))
         .add("/register", post(register))
-        .add("/verify_email", post(verify))
+        .add("/register/success", get(registration_success_page))
+        .add("/verify_email", get(verify))
         .add("/forgot_password", post(forgot))
         .add("/reset_password", post(reset))
         .add("/logout", post(logout))

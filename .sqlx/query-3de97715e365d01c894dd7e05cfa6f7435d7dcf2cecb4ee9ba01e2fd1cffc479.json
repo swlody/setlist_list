@@ -6,10 +6,10 @@
     "parameters": {
       "Left": [
         "Uuid",
-        "Varchar",
-        "Varchar",
+        "Text",
+        "Text",
         "Uuid",
-        "Varchar",
+        "Text",
         "Timestamp",
         "Timestamp"
       ]

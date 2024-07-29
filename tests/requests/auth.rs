@@ -69,10 +69,19 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
         _ = request.post("/register").json(&register_payload).await;
 
         let user = users::Model::find_by_email(&ctx.db, email).await.unwrap();
-        let verify_payload = serde_json::json!({
-            "token": user.email_verification_token,
-        });
-        request.post("/verify_email").json(&verify_payload).await;
+        request
+            .get(&format!(
+                "/verify_email?token={}",
+                user.email_verification_token.unwrap()
+            ))
+            .await;
+
+        // Make sure email_verified_at is set
+        assert!(users::Model::find_by_email(&ctx.db, email)
+            .await
+            .unwrap()
+            .email_verified_at
+            .is_some());
 
         //verify user request
         let response = request
@@ -82,13 +91,6 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
                 "password": password
             }))
             .await;
-
-        // Make sure email_verified_at is set
-        assert!(users::Model::find_by_email(&ctx.db, email)
-            .await
-            .unwrap()
-            .email_verified_at
-            .is_some());
 
         let has_cookie = response.headers().get(header::SET_COOKIE).is_some();
 
@@ -182,7 +184,7 @@ async fn can_reset_password() {
             }))
             .await;
 
-        assert_eq!(response.status_code(), 200);
+        assert_eq!(response.status_code(), 303);
 
         with_settings!({
             filters => testing::cleanup_email()

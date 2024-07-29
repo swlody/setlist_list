@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE sets SET dj_names = $1, venue = $2, city = $3, event_name = $4, event_date = $5, doors_time = $6, scheduled_start = $7, actual_start = $8, end_time = $9, setlist = $10 WHERE id = $11",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "Text",
+        "Text",
+        "Text",
+        "Date",
+        "Timestamp",
+        "Timestamp",
+        "Timestamp",
+        "Timestamp",
+        "Json",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "010a5f922d8f2698daf51e086f6c4ab0ca2d83ce30d34f8252ad986e11618c58"
+}

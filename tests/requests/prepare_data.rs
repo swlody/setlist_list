@@ -23,11 +23,12 @@ pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedIn
         .await
         .unwrap();
 
-    let verify_payload = serde_json::json!({
-        "token": user.email_verification_token,
-    });
-
-    request.post("/verify_email").json(&verify_payload).await;
+    request
+        .get(&format!(
+            "/verify_email?token={}",
+            user.email_verification_token.unwrap()
+        ))
+        .await;
 
     let response = request
         .post("/login")

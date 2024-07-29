@@ -66,6 +66,7 @@ impl<'a> Template<'a> {
         let html_t = embedded_file(self.dir, HTML)?;
 
         // TODO(consider): check+consider offloading to tokio async this work
+        // TODO(swlody) hot reloading of env (use cargo watch for now)
         let env = minijinja::Environment::new();
         let text = template::render_string(&env, &text_t, locals)?;
         let html = template::render_string(&env, &html_t, locals)?;

@@ -15,12 +15,12 @@ pub fn hx_redirect(redirect_to: &PathAndQuery) -> Result<Response> {
         .empty()
 }
 
-pub fn hx_redirect_with_cookies(
+pub fn redirect_with_cookies(
     redirect_to: &PathAndQuery,
     cookies: &[Cookie<'_>],
 ) -> Result<Response> {
     format::RenderBuilder::new()
         .header(HX_REDIRECT, redirect_to.path())
         .cookies(cookies)?
-        .empty()
+        .redirect(redirect_to.path())
 }

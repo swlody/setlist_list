@@ -3,6 +3,7 @@
 #![allow(clippy::unused_async)]
 use auth::JWTWithUser;
 use axum::{debug_handler, http::uri::PathAndQuery};
+use chrono::{NaiveDate, NaiveDateTime, Utc};
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -16,19 +17,31 @@ use crate::{
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
-    pub band_name: Option<String>,
-    pub date: chrono::NaiveDate,
+    pub dj_names: Vec<String>,
     pub venue: Option<String>,
+    pub city: Option<String>,
+    pub event_name: Option<String>,
+    pub event_date: NaiveDate,
+    pub doors_time: Option<NaiveDateTime>,
+    pub scheduled_start: Option<NaiveDateTime>,
+    pub actual_start: Option<NaiveDateTime>,
+    pub end_time: Option<NaiveDateTime>,
     pub setlist: Option<serde_json::Value>,
 }
 
 impl Params {
-    fn update(&self, item: &mut sets::Model) {
-        item.updated_at = chrono::Utc::now().naive_utc();
-        item.band_name.clone_from(&self.band_name);
-        item.date = self.date;
-        item.venue.clone_from(&self.venue);
-        item.setlist.clone_from(&self.setlist);
+    fn update(self, item: &mut sets::Model) {
+        item.updated_at = Utc::now().naive_utc();
+        item.dj_names = self.dj_names;
+        item.venue = self.venue;
+        item.city = self.city;
+        item.event_name = self.event_name;
+        item.event_date = self.event_date;
+        item.doors_time = self.doors_time;
+        item.scheduled_start = self.scheduled_start;
+        item.actual_start = self.actual_start;
+        item.end_time = self.end_time;
+        item.setlist = self.setlist;
     }
 }
 

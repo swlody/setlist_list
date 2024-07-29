@@ -11,11 +11,17 @@ pub struct Model {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub id: Uuid,
-    pub band_name: Option<String>,
-    pub date: NaiveDate,
-    pub venue: Option<String>,
-    pub setlist: Option<JsonValue>,
     pub creator_id: Uuid,
+    pub dj_names: Vec<String>,
+    pub venue: Option<String>,
+    pub city: Option<String>,
+    pub event_name: Option<String>,
+    pub event_date: NaiveDate,
+    pub doors_time: Option<NaiveDateTime>,
+    pub scheduled_start: Option<NaiveDateTime>,
+    pub actual_start: Option<NaiveDateTime>,
+    pub end_time: Option<NaiveDateTime>,
+    pub setlist: Option<JsonValue>,
 }
 
 impl Model {
@@ -49,13 +55,19 @@ impl Model {
 
     pub async fn insert(&self, db: &PgPool) -> ModelResult<()> {
         sqlx::query!(
-            "INSERT INTO sets (id, band_name, date, venue, setlist, creator_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            "INSERT INTO sets (id, creator_id, dj_names, venue, city, event_name, event_date, doors_time, scheduled_start, actual_start, end_time, setlist) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
             self.id,
-            self.band_name,
-            self.date,
+            self.creator_id,
+            &self.dj_names,
             self.venue,
-            self.setlist,
-            self.creator_id
+            self.city,
+            self.event_name,
+            self.event_date,
+            self.doors_time,
+            self.scheduled_start,
+            self.actual_start,
+            self.end_time,
+            self.setlist
         )
         .execute(db)
         .await?;
@@ -64,10 +76,16 @@ impl Model {
 
     pub async fn update(&self, db: &PgPool) -> ModelResult<()> {
         sqlx::query!(
-            "UPDATE sets SET band_name = $1, date = $2, venue = $3, setlist = $4 WHERE id = $5",
-            self.band_name,
-            self.date,
+            "UPDATE sets SET dj_names = $1, venue = $2, city = $3, event_name = $4, event_date = $5, doors_time = $6, scheduled_start = $7, actual_start = $8, end_time = $9, setlist = $10 WHERE id = $11",
+            &self.dj_names,
             self.venue,
+            self.city,
+            self.event_name,
+            self.event_date,
+            self.doors_time,
+            self.scheduled_start,
+            self.actual_start,
+            self.end_time,
             self.setlist,
             self.id
         )

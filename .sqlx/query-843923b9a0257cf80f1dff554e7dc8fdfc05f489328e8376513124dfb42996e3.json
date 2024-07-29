@@ -21,12 +21,12 @@
       {
         "ordinal": 3,
         "name": "email",
-        "type_info": "Varchar"
+        "type_info": "Text"
       },
       {
         "ordinal": 4,
         "name": "password",
-        "type_info": "Varchar"
+        "type_info": "Text"
       },
       {
         "ordinal": 5,
@@ -36,7 +36,7 @@
       {
         "ordinal": 6,
         "name": "username",
-        "type_info": "Varchar"
+        "type_info": "Text"
       },
       {
         "ordinal": 7,
