@@ -36,7 +36,7 @@ where
         match &ctx.config.workers.mode {
             WorkerMode::BackgroundQueue => {
                 if let Some(queue) = &ctx.queue {
-                    Self::perform_async(queue, args).await.unwrap();
+                    Self::perform_async(queue, args).await?;
                 } else {
                     error!(
                         error.msg =
@@ -46,7 +46,7 @@ where
                 }
             }
             WorkerMode::ForegroundBlocking => {
-                Self::build(ctx).perform(args).await.unwrap();
+                Self::build(ctx).perform(args).await?;
             }
             WorkerMode::BackgroundAsync => {
                 let dx = ctx.clone();

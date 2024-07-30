@@ -1,4 +1,5 @@
 use axum::http::{header, HeaderName, HeaderValue};
+use eyre::ContextCompat as _;
 use loco_rs::{app::AppContext, TestServer};
 use setlist_list::models::users;
 
@@ -14,7 +15,7 @@ pub async fn init_user_login(
     ctx: &AppContext,
     username: &str,
     email: &str,
-) -> LoggedInUser {
+) -> eyre::Result<LoggedInUser> {
     let register_payload = serde_json::json!({
         "username": username,
         "email": email,
@@ -23,12 +24,13 @@ pub async fn init_user_login(
 
     //Creating a new user
     request.post("/register").json(&register_payload).await;
-    let user = users::Model::find_by_email(&ctx.db, email).await.unwrap();
+    let user = users::Model::find_by_email(&ctx.db, email).await?;
 
     request
         .get(&format!(
             "/verify_email?token={}",
-            user.email_verification_token.unwrap()
+            user.email_verification_token
+                .context("unable to get email verification token")?
         ))
         .await;
 
@@ -44,25 +46,24 @@ pub async fn init_user_login(
     let token = response
         .headers()
         .get(header::SET_COOKIE)
-        .unwrap()
-        .to_str()
-        .unwrap()
+        .context("unable to get COOKIE header")?
+        .to_str()?
         .split_once("=")
-        .unwrap()
+        .context("cookie header does not have value")?
         .1
         .split_once(";")
-        .unwrap()
+        .context("cookie header does not end in semicolon")?
         .0
         .to_string();
 
-    LoggedInUser {
-        user: users::Model::find_by_email(&ctx.db, email).await.unwrap(),
+    Ok(LoggedInUser {
+        user: users::Model::find_by_email(&ctx.db, email).await?,
         _token: token,
-    }
+    })
 }
 
-pub fn _auth_header(token: &str) -> (HeaderName, HeaderValue) {
-    let auth_header_value = HeaderValue::from_str(&format!("Bearer {}", &token)).unwrap();
+pub fn _auth_header(token: &str) -> eyre::Result<(HeaderName, HeaderValue)> {
+    let auth_header_value = HeaderValue::from_str(&format!("Bearer {}", &token))?;
 
-    (HeaderName::from_static("authorization"), auth_header_value)
+    Ok((HeaderName::from_static("authorization"), auth_header_value))
 }

@@ -66,13 +66,14 @@ fn login_cookie_redirect(ctx: &AppContext, user: &users::Model) -> Result<Respon
         .generate_jwt(&jwt_secret.secret, &jwt_secret.expiration)
         .or_else(|_| unauthorized("unauthorized!"))?;
 
-    // TODO remove unwraps (should never fail but still)
     let now = SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .expect("Time went backwards")
+        .map_err(|e| Error::Anyhow(e.into()))?
         .as_secs();
-    let jwt_expiration = i64::try_from(now + jwt_secret.expiration).unwrap();
-    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration).unwrap();
+    let jwt_expiration =
+        i64::try_from(now + jwt_secret.expiration).map_err(|e| Error::Anyhow(e.into()))?;
+    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration)
+        .map_err(|e| Error::Anyhow(e.into()))?;
 
     let cookie = CookieBuilder::new("token", token)
         .path("/")
@@ -162,10 +163,11 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
 async fn logout(_auth: auth::JWT, State(_ctx): State<AppContext>) -> Result<Response> {
     let now = SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .expect("Time went backwards")
+        .map_err(|e| Error::Anyhow(e.into()))?
         .as_secs();
-    let jwt_expiration = i64::try_from(now + 10).unwrap();
-    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration).unwrap();
+    let jwt_expiration = i64::try_from(now + 10).map_err(|e| Error::Anyhow(e.into()))?;
+    let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration)
+        .map_err(|e| Error::Anyhow(e.into()))?;
 
     let cookie = CookieBuilder::new("token", "deleted")
         .path("/")

@@ -157,10 +157,10 @@ pub async fn boot_test<H: Hooks>(pool: PgPool) -> Result<BootResult> {
 /// }
 /// ```
 #[allow(clippy::future_not_send)]
-pub async fn request<H: Hooks, F, Fut>(pool: PgPool, callback: F)
+pub async fn request<H: Hooks, F, Fut>(pool: PgPool, callback: F) -> eyre::Result<()>
 where
     F: FnOnce(TestServer, AppContext) -> Fut,
-    Fut: std::future::Future<Output = ()>,
+    Fut: std::future::Future<Output = eyre::Result<()>>,
 {
     let boot = boot_test::<H>(pool).await.unwrap();
 
@@ -170,5 +170,7 @@ where
 
     let server = TestServer::new_with_config(boot.router.unwrap(), config).unwrap();
 
-    callback(server, boot.app_context.clone()).await;
+    callback(server, boot.app_context.clone()).await?;
+
+    Ok(())
 }

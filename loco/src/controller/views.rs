@@ -42,7 +42,7 @@ where
     ) -> std::result::Result<Self, Self::Rejection> {
         let Extension(tl): Extension<Self> = Extension::from_request_parts(parts, state)
             .await
-            .expect("TeraLayer missing. Is the TeraLayer installed?");
+            .expect("ViewEngine missing. Is the ViewEngine installed?");
         /*
         let locale = parts
             .headers

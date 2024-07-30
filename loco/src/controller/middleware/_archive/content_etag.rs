@@ -77,17 +77,12 @@ where
 
                     if let Some(etag_in_request) = ifnm {
                         if etag_in_request == &etag {
-                            return Ok(Response::builder()
-                                .status(304)
-                                .body(Body::empty())
-                                .unwrap());
+                            return Ok(Response::builder().status(304).body(Body::empty())?);
                         }
                     }
 
                     let mut response_with_etag = response;
-                    response_with_etag
-                        .headers_mut()
-                        .insert(ETAG, etag.parse().unwrap());
+                    response_with_etag.headers_mut().insert(ETAG, etag.parse()?);
                     Ok(response_with_etag)
                 })
                 .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync>)

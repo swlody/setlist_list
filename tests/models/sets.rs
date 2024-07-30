@@ -14,18 +14,18 @@ macro_rules! configure_insta {
 }
 
 #[sqlx::test(fixtures("sets"))]
-async fn can_find_by_id(pool: PgPool) {
+async fn can_find_by_id(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let item = Model::find_by_id(
         &boot.app_context.db,
         uuid!("33333333-3333-3333-3333-333333333333"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     // snapshot the result:
     assert_debug_snapshot!(item);
+    Ok(())
 }

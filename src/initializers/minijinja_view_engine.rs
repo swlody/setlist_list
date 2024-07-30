@@ -37,9 +37,6 @@ impl MiniJinjaView {
 
     #[cfg(not(debug_assertions))]
     fn new() -> Self {
-        // TODO statically embed templates in production?
-        // https://github.com/mitsuhiko/minijinja/blob/main/examples/embedding/src/main.rs
-
         let template_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("assets/views");
         let mut env = Environment::new();
         env.set_loader(path_loader(&template_path));

@@ -256,7 +256,6 @@ impl Model {
     ///
     /// when has DB query error
     pub async fn verified(&mut self, db: &PgPool) -> ModelResult<()> {
-        // TODO modified at?
         self.email_verified_at = Some(Utc::now().naive_utc());
         self.updated_at = Utc::now().naive_utc();
         sqlx::query!(

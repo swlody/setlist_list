@@ -1,6 +1,6 @@
 ---
 source: tests/requests/auth.rs
-expression: ctx.mailer.unwrap().deliveries()
+expression: mailer.deliveries()
 ---
 Deliveries {
     count: 1,

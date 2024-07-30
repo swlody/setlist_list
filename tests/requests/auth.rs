@@ -1,4 +1,5 @@
 use axum::http::header;
+use eyre::ContextCompat as _;
 use insta::{assert_debug_snapshot, with_settings};
 use loco_rs::testing;
 use setlist_list::{app::App, models::users};
@@ -20,7 +21,7 @@ macro_rules! configure_insta {
 }
 
 #[sqlx::test]
-async fn can_register(pool: PgPool) {
+async fn can_register(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
     testing::request::<App, _, _>(pool, |request, ctx| async move {
@@ -40,16 +41,20 @@ async fn can_register(pool: PgPool) {
             assert_debug_snapshot!(saved_user);
         });
 
+        let mailer = ctx.mailer.context("could not get mailer")?;
+
         with_settings!({
             filters => testing::cleanup_email()
         }, {
-            assert_debug_snapshot!(ctx.mailer.unwrap().deliveries());
+            assert_debug_snapshot!(mailer.deliveries());
         });
+
+        Ok(())
     })
-    .await;
+    .await
 }
 
-async fn login_with_verify(pool: PgPool, test_name: &str, password: &str) {
+async fn login_with_verify(pool: PgPool, test_name: &str, password: &str) -> eyre::Result<()> {
     configure_insta!();
 
     testing::request::<App, _, _>(pool, |request, ctx| async move {
@@ -63,18 +68,18 @@ async fn login_with_verify(pool: PgPool, test_name: &str, password: &str) {
         //Creating a new user
         _ = request.post("/register").json(&register_payload).await;
 
-        let user = users::Model::find_by_email(&ctx.db, &email).await.unwrap();
+        let user = users::Model::find_by_email(&ctx.db, &email).await?;
         request
             .get(&format!(
                 "/verify_email?token={}",
-                user.email_verification_token.unwrap()
+                user.email_verification_token
+                    .context("could not get email verification token")?
             ))
             .await;
 
         // Make sure email_verified_at is set
         assert!(users::Model::find_by_email(&ctx.db, &email)
-            .await
-            .unwrap()
+            .await?
             .email_verified_at
             .is_some());
 
@@ -94,22 +99,24 @@ async fn login_with_verify(pool: PgPool, test_name: &str, password: &str) {
         }, {
             assert_debug_snapshot!(test_name, (response.status_code(), has_cookie));
         });
+
+        Ok(())
     })
-    .await;
+    .await
 }
 
 #[sqlx::test]
-async fn can_login_with_verify_valid_password(pool: PgPool) {
+async fn can_login_with_verify_valid_password(pool: PgPool) -> eyre::Result<()> {
     login_with_verify(pool, "login_with_valid_password", "12341234").await
 }
 
 #[sqlx::test]
-async fn can_login_with_verify_invalid_password(pool: PgPool) {
+async fn can_login_with_verify_invalid_password(pool: PgPool) -> eyre::Result<()> {
     login_with_verify(pool, "login_with_invalid_password", "invalid-password").await
 }
 
 #[sqlx::test]
-async fn can_login_without_verify(pool: PgPool) {
+async fn can_login_without_verify(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
     testing::request::<App, _, _>(pool, |request, _ctx| async move {
@@ -140,26 +147,26 @@ async fn can_login_without_verify(pool: PgPool) {
         }, {
             assert_debug_snapshot!((response.status_code(), has_cookie));
         });
+
+        Ok(())
     })
-    .await;
+    .await
 }
 
 #[sqlx::test]
-async fn can_reset_password(pool: PgPool) {
+async fn can_reset_password(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
     testing::request::<App, _, _>(pool, |request, ctx| async move {
         let (username, email) = get_random_user_email();
-        let login_data = prepare_data::init_user_login(&request, &ctx, &username, &email).await;
+        let login_data = prepare_data::init_user_login(&request, &ctx, &username, &email).await?;
 
         let forgot_payload = serde_json::json!({
             "email": login_data.user.email,
         });
         _ = request.post("/forgot_password").json(&forgot_payload).await;
 
-        let user = users::Model::find_by_email(&ctx.db, &login_data.user.email)
-            .await
-            .unwrap();
+        let user = users::Model::find_by_email(&ctx.db, &login_data.user.email).await?;
         assert!(user.reset_token.is_some());
         assert!(user.reset_sent_at.is_some());
 
@@ -171,9 +178,7 @@ async fn can_reset_password(pool: PgPool) {
 
         let reset_response = request.post("/reset_password").json(&reset_payload).await;
 
-        let user = users::Model::find_by_email(&ctx.db, &user.email)
-            .await
-            .unwrap();
+        let user = users::Model::find_by_email(&ctx.db, &user.email).await?;
 
         assert!(user.reset_token.is_none());
         assert!(user.reset_sent_at.is_none());
@@ -190,11 +195,15 @@ async fn can_reset_password(pool: PgPool) {
 
         assert_eq!(response.status_code(), 303);
 
+        let mailer = ctx.mailer.context("could not get mailer")?;
+
         with_settings!({
             filters => testing::cleanup_email()
         }, {
-            assert_debug_snapshot!(ctx.mailer.unwrap().deliveries());
+            assert_debug_snapshot!(mailer.deliveries());
         });
+
+        Ok(())
     })
-    .await;
+    .await
 }

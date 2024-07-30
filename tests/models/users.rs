@@ -17,10 +17,10 @@ macro_rules! configure_insta {
 }
 
 #[sqlx::test]
-async fn can_create_with_password(pool: PgPool) {
+async fn can_create_with_password(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let params = RegisterParams {
         email: "test@framework.com".to_string(),
@@ -34,13 +34,15 @@ async fn can_create_with_password(pool: PgPool) {
     }, {
         assert_debug_snapshot!(res);
     });
+
+    Ok(())
 }
 
 #[sqlx::test(fixtures("users"))]
-async fn handle_create_with_password_with_duplicate(pool: PgPool) {
+async fn handle_create_with_password_with_duplicate(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let new_user: Result<Model, ModelError> = Model::create_with_password(
         &boot.app_context.db,
@@ -52,13 +54,15 @@ async fn handle_create_with_password_with_duplicate(pool: PgPool) {
     )
     .await;
     assert!(new_user.is_err());
+
+    Ok(())
 }
 
 #[sqlx::test(fixtures("users"))]
-async fn can_find_by_email(pool: PgPool) {
+async fn can_find_by_email(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let existing_user = Model::find_by_email(&boot.app_context.db, "user1@example.com").await;
     let non_existing_user_results =
@@ -66,13 +70,15 @@ async fn can_find_by_email(pool: PgPool) {
 
     assert_debug_snapshot!(existing_user);
     assert_debug_snapshot!(non_existing_user_results);
+
+    Ok(())
 }
 
 #[sqlx::test(fixtures("users"))]
-async fn can_find_by_id(pool: PgPool) {
+async fn can_find_by_id(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let existing_user = Model::find_by_id(
         &boot.app_context.db,
@@ -84,20 +90,21 @@ async fn can_find_by_id(pool: PgPool) {
 
     assert_debug_snapshot!(existing_user);
     assert_debug_snapshot!(non_existing_user_results);
+
+    Ok(())
 }
 
 #[sqlx::test(fixtures("users"))]
-async fn can_verification_token(pool: PgPool) {
+async fn can_verification_token(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let mut user = Model::find_by_id(
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     assert!(user.email_verification_sent_at.is_none());
     assert!(user.email_verification_token.is_none());
@@ -111,25 +118,25 @@ async fn can_verification_token(pool: PgPool) {
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     assert!(user.email_verification_sent_at.is_some());
     assert!(user.email_verification_token.is_some());
+
+    Ok(())
 }
 
 #[sqlx::test(fixtures("users"))]
-async fn can_set_forgot_password_sent(pool: PgPool) {
+async fn can_set_forgot_password_sent(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let mut user = Model::find_by_id(
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     assert!(user.reset_sent_at.is_none());
     assert!(user.reset_token.is_none());
@@ -143,25 +150,25 @@ async fn can_set_forgot_password_sent(pool: PgPool) {
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     assert!(user.reset_sent_at.is_some());
     assert!(user.reset_token.is_some());
+
+    Ok(())
 }
 
 #[sqlx::test(fixtures("users"))]
-async fn can_verified(pool: PgPool) {
+async fn can_verified(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let mut user = Model::find_by_id(
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     assert!(user.email_verified_at.is_none());
 
@@ -171,24 +178,24 @@ async fn can_verified(pool: PgPool) {
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     assert!(user.email_verified_at.is_some());
+
+    Ok(())
 }
 
 #[sqlx::test(fixtures("users"))]
-async fn can_reset_password(pool: PgPool) {
+async fn can_reset_password(pool: PgPool) -> eyre::Result<()> {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>(pool).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await?;
 
     let user = Model::find_by_id(
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111"),
     )
-    .await
-    .unwrap();
+    .await?;
 
     assert!(user.verify_password("12341234"));
 
@@ -202,7 +209,8 @@ async fn can_reset_password(pool: PgPool) {
         &boot.app_context.db,
         uuid!("11111111-1111-1111-1111-111111111111")
     )
-    .await
-    .unwrap()
+    .await?
     .verify_password("new-password"));
+
+    Ok(())
 }
