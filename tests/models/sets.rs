@@ -1,6 +1,9 @@
+use insta::assert_debug_snapshot;
 use loco_rs::testing;
-use serial_test::serial;
 use setlist_list::app::App;
+use setlist_list::models::sets::Model;
+use sqlx::PgPool;
+use uuid::uuid;
 
 macro_rules! configure_insta {
     ($($expr:expr),*) => {
@@ -10,22 +13,19 @@ macro_rules! configure_insta {
     };
 }
 
-#[tokio::test]
-#[serial]
-async fn test_model() {
+#[sqlx::test(fixtures("sets"))]
+async fn can_find_by_id(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
-    // query your model, e.g.:
-    //
-    // let item = models::posts::Model::find_by_id(
-    //     &boot.app_context.db,
-    //     "11111111-1111-1111-1111-111111111111",
-    // )
-    // .await;
+    let item = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("33333333-3333-3333-3333-333333333333"),
+    )
+    .await
+    .unwrap();
 
     // snapshot the result:
-    // assert_debug_snapshot!(item);
+    assert_debug_snapshot!(item);
 }

@@ -1,9 +1,8 @@
 use axum::http::header;
 use insta::{assert_debug_snapshot, with_settings};
 use loco_rs::testing;
-use rstest::rstest;
-use serial_test::serial;
 use setlist_list::{app::App, models::users};
+use sqlx::PgPool;
 
 use crate::utils::get_random_user_email;
 
@@ -20,12 +19,11 @@ macro_rules! configure_insta {
     };
 }
 
-#[tokio::test]
-#[serial]
-async fn can_register() {
+#[sqlx::test]
+async fn can_register(pool: PgPool) {
     configure_insta!();
 
-    testing::request::<App, _, _>(|request, ctx| async move {
+    testing::request::<App, _, _>(pool, |request, ctx| async move {
         let (username, email) = get_random_user_email();
         let payload = serde_json::json!({
             "username": username,
@@ -51,15 +49,10 @@ async fn can_register() {
     .await;
 }
 
-#[rstest]
-#[case("login_with_valid_password", "12341234")]
-#[case("login_with_invalid_password", "invalid-password")]
-#[tokio::test]
-#[serial]
-async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) {
+async fn login_with_verify(pool: PgPool, test_name: &str, password: &str) {
     configure_insta!();
 
-    testing::request::<App, _, _>(|request, ctx| async move {
+    testing::request::<App, _, _>(pool, |request, ctx| async move {
         let (username, email) = get_random_user_email();
         let register_payload = serde_json::json!({
             "username": username,
@@ -105,12 +98,21 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
     .await;
 }
 
-#[tokio::test]
-#[serial]
-async fn can_login_without_verify() {
+#[sqlx::test]
+async fn can_login_with_verify_valid_password(pool: PgPool) {
+    login_with_verify(pool, "login_with_valid_password", "12341234").await
+}
+
+#[sqlx::test]
+async fn can_login_with_verify_invalid_password(pool: PgPool) {
+    login_with_verify(pool, "login_with_invalid_password", "invalid-password").await
+}
+
+#[sqlx::test]
+async fn can_login_without_verify(pool: PgPool) {
     configure_insta!();
 
-    testing::request::<App, _, _>(|request, _ctx| async move {
+    testing::request::<App, _, _>(pool, |request, _ctx| async move {
         let (username, email) = get_random_user_email();
         let password = "12341234";
         let register_payload = serde_json::json!({
@@ -142,12 +144,11 @@ async fn can_login_without_verify() {
     .await;
 }
 
-#[tokio::test]
-#[serial]
-async fn can_reset_password() {
+#[sqlx::test]
+async fn can_reset_password(pool: PgPool) {
     configure_insta!();
 
-    testing::request::<App, _, _>(|request, ctx| async move {
+    testing::request::<App, _, _>(pool, |request, ctx| async move {
         let (username, email) = get_random_user_email();
         let login_data = prepare_data::init_user_login(&request, &ctx, &username, &email).await;
 

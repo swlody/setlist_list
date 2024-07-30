@@ -5,6 +5,7 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::validation::ModelValidationErrors;
 
@@ -45,6 +46,6 @@ pub type ModelResult<T, E = ModelError> = std::result::Result<T, E>;
 
 #[async_trait]
 pub trait Authenticable: Clone {
-    async fn find_by_api_key(db: &PgPool, api_key: &str) -> ModelResult<Self>;
-    async fn find_by_claims_key(db: &PgPool, claims_key: &str) -> ModelResult<Self>;
+    async fn find_by_api_key(db: &PgPool, api_key: Uuid) -> ModelResult<Self>;
+    async fn find_by_claims_key(db: &PgPool, claims_key: Uuid) -> ModelResult<Self>;
 }

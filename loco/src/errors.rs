@@ -69,6 +69,9 @@ pub enum Error {
     Sqlx(#[from] sqlx::Error),
 
     #[error(transparent)]
+    Uuid(#[from] uuid::Error),
+
+    #[error(transparent)]
     MigrateError(#[from] sqlx::migrate::MigrateError),
 
     #[error(transparent)]

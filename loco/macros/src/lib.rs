@@ -59,7 +59,6 @@ pub fn test_request(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     let expanded = quote! {
 
         #[tokio::test]
-        #[serial]
         #(#wrapper_attributes)*
         async fn #original_function_name() {
             let mut settings = insta::Settings::clone_current();

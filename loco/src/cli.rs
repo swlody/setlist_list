@@ -76,7 +76,7 @@ pub async fn playground<H: Hooks>() -> crate::Result<AppContext> {
     let cli = Playground::parse();
     let environment: Environment = cli.environment.unwrap_or_else(resolve_from_env).into();
 
-    let app_context = create_context::<H>(&environment).await?;
+    let app_context = create_context::<H>(&environment, None).await?;
     Ok(app_context)
 }
 
@@ -132,7 +132,7 @@ pub async fn main<H: Hooks>() -> eyre::Result<()> {
                 StartMode::ServerOnly
             };
 
-            let boot_result = create_app::<H>(start_mode, &environment).await?;
+            let boot_result = create_app::<H>(start_mode, &environment, None).await?;
             let serve_params = ServeParams {
                 port: port.map_or(boot_result.app_context.config.server.port, |p| p),
                 binding: binding
@@ -141,7 +141,7 @@ pub async fn main<H: Hooks>() -> eyre::Result<()> {
             start::<H>(boot_result, serve_params).await?;
         }
         Commands::Routes {} => {
-            let app_context = create_context::<H>(&environment).await?;
+            let app_context = create_context::<H>(&environment, None).await?;
             show_list_endpoints::<H>(&app_context);
         }
         Commands::Version {} => {

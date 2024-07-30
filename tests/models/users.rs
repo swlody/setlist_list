@@ -1,10 +1,11 @@
 use insta::assert_debug_snapshot;
 use loco_rs::{model::ModelError, testing};
-use serial_test::serial;
 use setlist_list::{
     app::App,
     models::users::{Model, RegisterParams},
 };
+use sqlx::PgPool;
+use uuid::uuid;
 
 macro_rules! configure_insta {
     ($($expr:expr),*) => {
@@ -15,12 +16,11 @@ macro_rules! configure_insta {
     };
 }
 
-#[tokio::test]
-#[serial]
-async fn can_create_with_password() {
+#[sqlx::test]
+async fn can_create_with_password(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
     let params = RegisterParams {
         email: "test@framework.com".to_string(),
@@ -36,13 +36,11 @@ async fn can_create_with_password() {
     });
 }
 
-#[tokio::test]
-#[serial]
-async fn handle_create_with_password_with_duplicate() {
+#[sqlx::test(fixtures("users"))]
+async fn handle_create_with_password_with_duplicate(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
     let new_user: Result<Model, ModelError> = Model::create_with_password(
         &boot.app_context.db,
@@ -56,13 +54,11 @@ async fn handle_create_with_password_with_duplicate() {
     assert!(new_user.is_err());
 }
 
-#[tokio::test]
-#[serial]
-async fn can_find_by_email() {
+#[sqlx::test(fixtures("users"))]
+async fn can_find_by_email(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
     let existing_user = Model::find_by_email(&boot.app_context.db, "user1@example.com").await;
     let non_existing_user_results =
@@ -72,16 +68,17 @@ async fn can_find_by_email() {
     assert_debug_snapshot!(non_existing_user_results);
 }
 
-#[tokio::test]
-#[serial]
-async fn can_find_by_id() {
+#[sqlx::test(fixtures("users"))]
+async fn can_find_by_id(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
-    let existing_user =
-        Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111").await;
+    let existing_user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await;
     let non_existing_user_results =
         Model::find_by_email(&boot.app_context.db, "23232323-2323-2323-2323-232323232323").await;
 
@@ -89,17 +86,18 @@ async fn can_find_by_id() {
     assert_debug_snapshot!(non_existing_user_results);
 }
 
-#[tokio::test]
-#[serial]
-async fn can_verification_token() {
+#[sqlx::test(fixtures("users"))]
+async fn can_verification_token(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
-    let mut user = Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-        .await
-        .unwrap();
+    let mut user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await
+    .unwrap();
 
     assert!(user.email_verification_sent_at.is_none());
     assert!(user.email_verification_token.is_none());
@@ -109,25 +107,29 @@ async fn can_verification_token() {
         .await
         .is_ok());
 
-    let user = Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-        .await
-        .unwrap();
+    let user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await
+    .unwrap();
 
     assert!(user.email_verification_sent_at.is_some());
     assert!(user.email_verification_token.is_some());
 }
 
-#[tokio::test]
-#[serial]
-async fn can_set_forgot_password_sent() {
+#[sqlx::test(fixtures("users"))]
+async fn can_set_forgot_password_sent(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
-    let mut user = Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-        .await
-        .unwrap();
+    let mut user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await
+    .unwrap();
 
     assert!(user.reset_sent_at.is_none());
     assert!(user.reset_token.is_none());
@@ -137,48 +139,56 @@ async fn can_set_forgot_password_sent() {
         .await
         .is_ok());
 
-    let user = Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-        .await
-        .unwrap();
+    let user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await
+    .unwrap();
 
     assert!(user.reset_sent_at.is_some());
     assert!(user.reset_token.is_some());
 }
 
-#[tokio::test]
-#[serial]
-async fn can_verified() {
+#[sqlx::test(fixtures("users"))]
+async fn can_verified(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
-    let mut user = Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-        .await
-        .unwrap();
+    let mut user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await
+    .unwrap();
 
     assert!(user.email_verified_at.is_none());
 
     assert!(user.verified(&boot.app_context.db).await.is_ok());
 
-    let user = Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-        .await
-        .unwrap();
+    let user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await
+    .unwrap();
 
     assert!(user.email_verified_at.is_some());
 }
 
-#[tokio::test]
-#[serial]
-async fn can_reset_password() {
+#[sqlx::test(fixtures("users"))]
+async fn can_reset_password(pool: PgPool) {
     configure_insta!();
 
-    let boot = testing::boot_test::<App>().await.unwrap();
-    testing::seed::<App>(&boot.app_context.db).await.unwrap();
+    let boot = testing::boot_test::<App>(pool).await.unwrap();
 
-    let user = Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-        .await
-        .unwrap();
+    let user = Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111"),
+    )
+    .await
+    .unwrap();
 
     assert!(user.verify_password("12341234"));
 
@@ -188,10 +198,11 @@ async fn can_reset_password() {
         .await
         .is_ok());
 
-    assert!(
-        Model::find_by_id(&boot.app_context.db, "11111111-1111-1111-1111-111111111111")
-            .await
-            .unwrap()
-            .verify_password("new-password")
-    );
+    assert!(Model::find_by_id(
+        &boot.app_context.db,
+        uuid!("11111111-1111-1111-1111-111111111111")
+    )
+    .await
+    .unwrap()
+    .verify_password("new-password"));
 }

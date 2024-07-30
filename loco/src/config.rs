@@ -116,7 +116,7 @@ pub struct Logger {
 /// Database configuration
 ///
 /// Configures the [SeaORM](https://www.sea-ql.org/SeaORM/) connection and pool, as well as Loco's additional DB
-/// management utils such as `auto_migrate`, `truncate` and `recreate`.
+/// management utils such as `auto_migrate`, and `recreate`.
 ///
 /// Example (development):
 /// ```yaml
@@ -129,7 +129,6 @@ pub struct Logger {
 ///   min_connections: 1
 ///   max_connections: 1
 ///   auto_migrate: true
-///   dangerously_truncate: false
 ///   dangerously_recreate: false
 /// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -163,11 +162,6 @@ pub struct Database {
     /// database every time you need.
     #[serde(default)]
     pub auto_migrate: bool,
-
-    /// Truncate database when application loads. It will delete data from your
-    /// tables. Commonly used in `test`.
-    #[serde(default)]
-    pub dangerously_truncate: bool,
 }
 
 /// Redis Configuration

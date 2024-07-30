@@ -35,9 +35,6 @@ pub fn print_banner(boot_result: &BootResult, server_config: &ServeParams) {
         if config.database.auto_migrate {
             database.push("automigrate".yellow());
         }
-        if config.database.dangerously_truncate {
-            database.push("truncate".bright_red());
-        }
 
         if !database.is_empty() {
             println!(

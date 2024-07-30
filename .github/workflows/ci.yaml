@@ -10,51 +10,47 @@ env:
   RUST_TOOLCHAIN: stable
   TOOLCHAIN_PROFILE: minimal
   SQLX_OFFLINE: true
+  CARGO_TERM_COLOR: always
 
 jobs:
   rustfmt:
     name: Check Style
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          # By default actions/checkout checks out a merge commit. Check out the PR head instead.
+          # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: rustfmt
-      - name: Run cargo fmt
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          command: fmt
-          args: --all -- --check
+      - run: cargo fmt --all -- --check
 
-  clippy:
-    name: Run Clippy
+  build-test-artifacts:
+    name: Build test artifacts
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          # By default actions/checkout checks out a merge commit. Check out the PR head instead.
+          # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+      - name: Build and archive tests
+        run: cargo nextest archive --all --archive-file nextest-archive.tar.zst
+      - name: Upload archive to workflow
+        uses: actions/upload-artifact@v4
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
-      - name: Run cargo clippy
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          command: clippy
-          args: --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms -A clippy::redundant_else -A clippy::missing_errors_doc -A clippy::option-if-let-else -A clippy::missing_panics_doc
+          name: nextest-archive
+          path: nextest-archive.tar.zst
 
-  test:
-    name: Run Tests
+  run-tests-partitioned:
+    name: Run tests with partitioning
     runs-on: ubuntu-latest
 
     permissions:
@@ -73,9 +69,9 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_DB: postgres_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: setlist_list_development
+          POSTGRES_USER: loco
+          POSTGRES_PASSWORD: loco
         ports:
           - "5432:5432"
         # Set health checks to wait until postgres has started
@@ -84,19 +80,45 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    needs: build-test-artifacts
+    strategy:
+      matrix:
+        partition: [1, 2]
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      # The source directory must be checked out.
+      - uses: actions/checkout@v4
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
-      - name: Run cargo test
-        uses: dtolnay/rust-toolchain@stable
+          # By default actions/checkout checks out a merge commit. Check out the PR head instead.
+          # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
+          ref: ${{ github.event.pull_request.head.sha }}
+      # In this example, the Rust toolchain is not installed. cargo nextest's run phase does not
+      # require Cargo. You can choose to install Rust if your tests require it, of course.
+      # Instead, create ~/.cargo/bin as required by the install action.
+      - run: mkdir -p ~/.cargo/bin
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+      - name: Download archive
+        uses: actions/download-artifact@v4
         with:
-          command: test
-          args: --all
-        env:
-          REDIS_URL: redis://localhost:${{job.services.redis.ports[6379]}}
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres_test
+          name: nextest-archive
+      - name: Run tests
+        run: |
+          ~/.cargo/bin/cargo-nextest nextest run --archive-file nextest-archive.tar.zst \
+            --partition count:${{ matrix.partition }}/2
+
+  clippy:
+      name: Run Clippy
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v4
+          with:
+            # By default actions/checkout checks out a merge commit. Check out the PR head instead.
+            # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
+            ref: ${{ github.event.pull_request.head.sha }}
+        - uses: dtolnay/rust-toolchain@stable
+        - uses: Swatinem/rust-cache@v2
+        - uses: dtolnay/rust-toolchain@stable
+          with:
+            components: clippy
+        - run: cargo clippy --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms -A clippy::redundant_else -A clippy::missing_errors_doc -A clippy::option-if-let-else -A clippy::missing_panics_doc

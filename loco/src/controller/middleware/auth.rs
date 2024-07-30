@@ -28,6 +28,7 @@ use axum::{
 };
 use axum_extra::extract::cookie;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{
     app::AppContext, auth, config::JWT as JWTConfig, errors::Error, model::Authenticable,
@@ -71,7 +72,8 @@ where
 
         match auth::jwt::JWT::new(&jwt_secret.secret).validate(&token) {
             Ok(claims) => {
-                let user = T::find_by_claims_key(&ctx.db, &claims.claims.id)
+                let claim_id = Uuid::parse_str(&claims.claims.id)?;
+                let user = T::find_by_claims_key(&ctx.db, claim_id)
                     .await
                     .map_err(|_| Error::Unauthorized("token is not valid".to_string()))?;
                 Ok(Self {
@@ -218,12 +220,13 @@ where
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Error> {
         // Extract API key from the request header.
         let api_key = extract_token_from_header(&parts.headers)?;
+        let api_key = Uuid::parse_str(&api_key)?;
 
         // Convert the state reference to the application context.
         let state: AppContext = AppContext::from_ref(state);
 
         // Retrieve user information based on the API key from the database.
-        let user = T::find_by_api_key(&state.db, &api_key)
+        let user = T::find_by_api_key(&state.db, api_key)
             .await
             .map_err(|e| Error::Unauthorized(e.to_string()))?;
 

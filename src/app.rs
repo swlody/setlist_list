@@ -1,5 +1,3 @@
-use std::{fs::File, path::Path};
-
 use async_trait::async_trait;
 use axum::{
     extract::OriginalUri,
@@ -26,29 +24,6 @@ use crate::{
     views,
 };
 
-// TODO make this generic
-pub async fn seed_users(db: &PgPool, users_path: &str) -> Result<()> {
-    let users_loader: Vec<serde_json::Value> = serde_yaml::from_reader(File::open(users_path)?)?;
-
-    for user in users_loader {
-        let user: users::Model = serde_json::from_value(user)?;
-        sqlx::query!(
-            "INSERT into USERS (id, email, password, api_key, username, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-            user.id,
-            user.email,
-            user.password,
-            user.api_key,
-            user.username,
-            user.created_at,
-            user.updated_at
-        )
-        .execute(db)
-        .await?;
-    }
-
-    Ok(())
-}
-
 pub struct App;
 #[async_trait]
 impl Hooks for App {
@@ -66,8 +41,12 @@ impl Hooks for App {
         )
     }
 
-    async fn boot(mode: StartMode, environment: &Environment) -> Result<BootResult> {
-        create_app::<Self>(mode, environment).await
+    async fn boot(
+        mode: StartMode,
+        environment: &Environment,
+        pool: Option<PgPool>,
+    ) -> Result<BootResult> {
+        create_app::<Self>(mode, environment, pool).await
     }
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
@@ -119,18 +98,6 @@ impl Hooks for App {
 
     async fn migrate(db: &PgPool) -> Result<()> {
         sqlx::migrate!().run(db).await?;
-        Ok(())
-    }
-
-    async fn truncate(db: &PgPool) -> Result<()> {
-        sqlx::query!("TRUNCATE users").execute(db).await?;
-        sqlx::query!("TRUNCATE sets").execute(db).await?;
-
-        Ok(())
-    }
-
-    async fn seed(db: &PgPool, base: &Path) -> Result<()> {
-        seed_users(db, &base.join("users.yaml").display().to_string()).await?;
         Ok(())
     }
 }

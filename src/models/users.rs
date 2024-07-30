@@ -53,15 +53,14 @@ impl Validatable for Model {
 
 #[async_trait]
 impl Authenticable for Model {
-    async fn find_by_api_key(db: &PgPool, api_key: &str) -> ModelResult<Self> {
-        let api_key = Uuid::parse_str(api_key).map_err(|e| ModelError::Any(Box::new(e)))?;
+    async fn find_by_api_key(db: &PgPool, api_key: Uuid) -> ModelResult<Self> {
         let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE api_key = $1", api_key)
             .fetch_optional(db)
             .await?;
         user.ok_or(ModelError::EntityNotFound)
     }
 
-    async fn find_by_claims_key(db: &PgPool, claims_key: &str) -> ModelResult<Self> {
+    async fn find_by_claims_key(db: &PgPool, claims_key: Uuid) -> ModelResult<Self> {
         Self::find_by_id(db, claims_key).await
     }
 }
@@ -115,9 +114,8 @@ impl Model {
     /// # Errors
     ///
     /// When could not find user  or DB query error
-    pub async fn find_by_id(db: &PgPool, id: &str) -> ModelResult<Self> {
-        let parse_uuid = Uuid::parse_str(id).map_err(|e| ModelError::Any(e.into()))?;
-        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE id = $1", parse_uuid)
+    pub async fn find_by_id(db: &PgPool, id: Uuid) -> ModelResult<Self> {
+        let user = sqlx::query_as!(Self, "SELECT * FROM users WHERE id = $1", id)
             .fetch_optional(db)
             .await?;
 
@@ -170,7 +168,7 @@ impl Model {
 
         let user = sqlx::query_as!(
             Self,
-            "INSERT into USERS (id, email, password, api_key, username, reset_token, reset_sent_at, email_verification_token, email_verification_sent_at, email_verified_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
+            "INSERT INTO users (id, email, password, api_key, username, reset_token, reset_sent_at, email_verification_token, email_verification_sent_at, email_verified_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
             user.id,
             user.email,
             user.password,

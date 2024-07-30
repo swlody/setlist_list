@@ -2,6 +2,7 @@
 //! This module contains functions and structures for bootstrapping and running
 //! your application.
 use axum::Router;
+use sqlx::PgPool;
 use tracing::{info, trace, warn};
 
 use crate::{
@@ -96,7 +97,10 @@ async fn process(processor: Processor) -> Result<()> {
 ///
 /// # Errors
 /// When has an error to create DB connection.
-pub async fn create_context<H: Hooks>(environment: &Environment) -> Result<AppContext> {
+pub async fn create_context<H: Hooks>(
+    environment: &Environment,
+    pool: Option<PgPool>,
+) -> Result<AppContext> {
     let config = environment.load()?;
 
     if config.logger.pretty_backtrace {
@@ -107,7 +111,11 @@ pub async fn create_context<H: Hooks>(environment: &Environment) -> Result<AppCo
         );
     }
 
-    let db = db::connect(&config.database).await?;
+    let db = if let Some(pool) = pool {
+        pool
+    } else {
+        db::connect(&config.database).await?
+    };
 
     let mailer = if let Some(cfg) = config.mailer.as_ref() {
         create_mailer(cfg)?
@@ -137,8 +145,9 @@ pub async fn create_context<H: Hooks>(environment: &Environment) -> Result<AppCo
 pub async fn create_app<H: Hooks>(
     mode: StartMode,
     environment: &Environment,
+    pool: Option<PgPool>,
 ) -> Result<BootResult> {
-    let app_context = create_context::<H>(environment).await?;
+    let app_context = create_context::<H>(environment, pool).await?;
     db::converge::<H>(&app_context.db, &app_context.config.database).await?;
 
     if let Some(pool) = &app_context.queue {

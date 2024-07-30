@@ -1,6 +1,6 @@
 //! This module contains the core components and traits for building a web
 //! server application.
-use std::{path::Path, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use axum::Router as AxumRouter;
@@ -94,7 +94,11 @@ pub trait Hooks {
     ///
     /// # Errors
     /// Could not boot the application
-    async fn boot(mode: StartMode, environment: &Environment) -> Result<BootResult>;
+    async fn boot(
+        mode: StartMode,
+        environment: &Environment,
+        pool: Option<PgPool>,
+    ) -> Result<BootResult>;
 
     /// Start serving the Axum web application on the specified address and
     /// port.
@@ -174,21 +178,8 @@ pub trait Hooks {
     /// [`Processor`] and [`AppContext`].
     fn connect_workers<'a>(p: &'a mut Processor, ctx: &'a AppContext);
 
-    /// Truncates the database as required. Users should implement this
-    /// function. The truncate controlled from the [`crate::config::Database`]
-    /// by changing dangerously_truncate to true (default false).
-    /// Truncate can be useful when you want to truncate the database before any
-    /// test.
-
-    async fn truncate(db: &PgPool) -> Result<()>;
-
     // Runs migrations on the database.
-
     async fn migrate(db: &PgPool) -> Result<()>;
-
-    /// Seeds the database with initial data.
-
-    async fn seed(db: &PgPool, path: &Path) -> Result<()>;
 }
 
 /// An initializer.
