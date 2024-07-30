@@ -5,6 +5,8 @@ use rstest::rstest;
 use serial_test::serial;
 use setlist_list::{app::App, models::users};
 
+use crate::utils::get_random_user_email;
+
 use super::prepare_data;
 
 // TODO: see how to dedup / extract this to app-local test utils
@@ -24,15 +26,15 @@ async fn can_register() {
     configure_insta!();
 
     testing::request::<App, _, _>(|request, ctx| async move {
-        let email = "test@loco.com";
+        let (username, email) = get_random_user_email();
         let payload = serde_json::json!({
-            "username": "loco",
+            "username": username,
             "email": email,
             "password": "12341234"
         });
 
         let _response = request.post("/register").json(&payload).await;
-        let saved_user = users::Model::find_by_email(&ctx.db, email).await;
+        let saved_user = users::Model::find_by_email(&ctx.db, &email).await;
 
         with_settings!({
             filters => testing::cleanup_user_model()
@@ -58,9 +60,9 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
     configure_insta!();
 
     testing::request::<App, _, _>(|request, ctx| async move {
-        let email = "test@loco.com";
+        let (username, email) = get_random_user_email();
         let register_payload = serde_json::json!({
-            "username": "loco",
+            "username": username,
             "email": email,
             "password": "12341234"
         });
@@ -68,7 +70,7 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
         //Creating a new user
         _ = request.post("/register").json(&register_payload).await;
 
-        let user = users::Model::find_by_email(&ctx.db, email).await.unwrap();
+        let user = users::Model::find_by_email(&ctx.db, &email).await.unwrap();
         request
             .get(&format!(
                 "/verify_email?token={}",
@@ -77,7 +79,7 @@ async fn can_login_with_verify(#[case] test_name: &str, #[case] password: &str) 
             .await;
 
         // Make sure email_verified_at is set
-        assert!(users::Model::find_by_email(&ctx.db, email)
+        assert!(users::Model::find_by_email(&ctx.db, &email)
             .await
             .unwrap()
             .email_verified_at
@@ -109,10 +111,10 @@ async fn can_login_without_verify() {
     configure_insta!();
 
     testing::request::<App, _, _>(|request, _ctx| async move {
-        let email = "test@loco.com";
+        let (username, email) = get_random_user_email();
         let password = "12341234";
         let register_payload = serde_json::json!({
-            "username": "loco",
+            "username": username,
             "email": email,
             "password": password
         });
@@ -146,7 +148,8 @@ async fn can_reset_password() {
     configure_insta!();
 
     testing::request::<App, _, _>(|request, ctx| async move {
-        let login_data = prepare_data::init_user_login(&request, &ctx).await;
+        let (username, email) = get_random_user_email();
+        let login_data = prepare_data::init_user_login(&request, &ctx, &username, &email).await;
 
         let forgot_payload = serde_json::json!({
             "email": login_data.user.email,

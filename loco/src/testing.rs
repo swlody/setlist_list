@@ -23,6 +23,7 @@ lazy_static! {
             r"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})",
             "ID"
         ),
+        (r"loco\w{10}", "LOCO_USER"),
         (r"password: (.*{60}),", "password: \"PASSWORD\","),
         (r"([A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*)","TOKEN")
     ];
@@ -40,6 +41,7 @@ lazy_static! {
             (r"[0-9A-Za-z]+{40}", "IDENTIFIER"),
             (r"\w+, \d{1,2} \w+ \d{4} \d{2}:\d{2}:\d{2} [+-]\d{4}", "DATE"),
             (r"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})","RANDOM_ID"),
+            (r"loco\w{10}", "LOCO_USER"),
 
             // also handles line break in text-format emails, where they break into a new line and then use '=' as continuation symbol.
             // #6c23875d-3523-4805-8527-f2=\r\n82d3aa7514

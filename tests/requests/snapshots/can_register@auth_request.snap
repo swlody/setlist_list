@@ -7,10 +7,10 @@ Ok(
         created_at: DATE,
         updated_at: DATE,
         id: ID,
-        email: "test@loco.com",
+        email: "LOCO_USER@loco.com",
         password: "PASSWORD",
         api_key: ID,
-        username: "loco",
+        username: "LOCO_USER",
         reset_token: None,
         reset_sent_at: None,
         email_verification_token: Some(
