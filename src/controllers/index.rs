@@ -1,4 +1,3 @@
-#![allow(clippy::unused_async)]
 use loco_rs::prelude::*;
 
 use crate::{

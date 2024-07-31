@@ -23,7 +23,6 @@ use bytes::Bytes;
 use self::drivers::StoreDriver;
 
 #[derive(thiserror::Error, Debug)]
-#[allow(clippy::module_name_repetitions)]
 pub enum StorageError {
     #[error("store not found by the given key: {0}")]
     StoreNotFound(String),
@@ -213,7 +212,7 @@ impl Storage {
     /// # Errors
     ///
     /// This method returns an error if the delete operation fails or if there
-    /// is an issue with the strategy configuration.    
+    /// is an issue with the strategy configuration.
     pub async fn delete_with_policy(
         &self,
         path: &Path,
@@ -236,7 +235,7 @@ impl Storage {
     ///     let path = Path::new("example.txt");
     ///     let content = "Loco!";
     ///     storage.upload(path, &Bytes::from(content)).await;
-    ///     
+    ///
     ///     let new_path = Path::new("new_path.txt");
     ///     let store = storage.as_store("default").unwrap();
     ///     assert!(storage.rename(&path, &new_path).await.is_ok());
@@ -286,7 +285,7 @@ impl Storage {
     ///     let path = Path::new("example.txt");
     ///     let content = "Loco!";
     ///     storage.upload(path, &Bytes::from(content)).await;
-    ///     
+    ///
     ///     let new_path = Path::new("new_path.txt");
     ///     let store = storage.as_store("default").unwrap();
     ///     assert!(storage.copy(&path, &new_path).await.is_ok());

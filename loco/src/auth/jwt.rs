@@ -46,7 +46,7 @@ impl JWT {
 
     /// Override the default  JWT algorithm to be used.
     #[must_use]
-    pub fn algorithm(mut self, algorithm: Algorithm) -> Self {
+    pub const fn algorithm(mut self, algorithm: Algorithm) -> Self {
         self.algorithm = algorithm;
         self
     }

@@ -17,7 +17,7 @@ pub struct ViewEngine<E>(pub E);
 
 impl<E> ViewEngine<E> {
     /// Creates a new [`Engine`] that wraps the given engine
-    pub fn new(engine: E) -> Self {
+    pub const fn new(engine: E) -> Self {
         Self(engine)
     }
 }

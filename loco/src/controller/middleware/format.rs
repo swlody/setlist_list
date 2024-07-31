@@ -41,7 +41,6 @@ where
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Error> {
         let headers = &parts.headers;
 
-        #[allow(clippy::option_if_let_else)]
         let respond_to =
             if let Some(content_type) = headers.get(CONTENT_TYPE).and_then(|h| h.to_str().ok()) {
                 detect_format(content_type)

@@ -45,7 +45,6 @@ use thiserror::Error;
 use validator::{Validate, ValidationError, ValidationErrors};
 
 #[derive(Debug, Deserialize, Serialize)]
-#[allow(clippy::module_name_repetitions)]
 pub struct ModelValidationMessage {
     pub code: String,
     pub message: Option<String>,

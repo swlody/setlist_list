@@ -47,7 +47,6 @@ impl Routes {
     ///     format::json(Health { ok: true })
     /// }
     /// Routes::at("status").add("/_ping", get(ping));
-    ///    
     /// ````
     #[must_use]
     pub fn at(prefix: &str) -> Self {

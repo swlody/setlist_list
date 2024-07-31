@@ -1,6 +1,3 @@
-#![allow(clippy::missing_errors_doc)]
-#![allow(clippy::unnecessary_struct_initialization)]
-#![allow(clippy::unused_async)]
 use auth::JWTWithUser;
 use axum::{debug_handler, http::uri::PathAndQuery};
 use chrono::{NaiveDate, NaiveDateTime, Utc};

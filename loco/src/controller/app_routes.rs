@@ -73,7 +73,7 @@ impl AppRoutes {
 
     /// Create an empty instance.
     #[must_use]
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self {
             prefix: None,
             routes: vec![],
@@ -118,7 +118,7 @@ impl AppRoutes {
 
     /// Get the prefix of the routes.
     #[must_use]
-    pub fn get_prefix(&self) -> Option<&String> {
+    pub const fn get_prefix(&self) -> Option<&String> {
         self.prefix.as_ref()
     }
 

@@ -137,7 +137,6 @@ fn get_jwt_from_config(ctx: &AppContext) -> LocoResult<&JWTConfig> {
 }
 /// extract token from the configured jwt location settings
 fn extract_token(jwt_config: &JWTConfig, parts: &Parts) -> LocoResult<String> {
-    #[allow(clippy::match_wildcard_for_single_variants)]
     match jwt_config
         .location
         .as_ref()

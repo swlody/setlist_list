@@ -1,4 +1,3 @@
-#![allow(clippy::unused_async)]
 use std::time::SystemTime;
 
 use ::cookie::CookieBuilder;

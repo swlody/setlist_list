@@ -1,4 +1,3 @@
-#![allow(clippy::missing_const_for_fn)]
 #![allow(clippy::module_name_repetitions)]
 
 pub use self::errors::Error;

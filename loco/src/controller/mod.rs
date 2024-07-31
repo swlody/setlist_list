@@ -63,7 +63,7 @@ pub fn bad_request<T: Into<String>, U>(msg: T) -> Result<U> {
 /// # Errors
 /// Currently this function did't return any error. this is for feature
 /// functionality
-pub fn not_found<T>() -> Result<T> {
+pub const fn not_found<T>() -> Result<T> {
     Err(Error::NotFound)
 }
 #[derive(Debug, Serialize)]

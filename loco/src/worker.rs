@@ -25,7 +25,6 @@ pub fn get_queues(config_queues: &Option<Vec<String>>) -> Vec<String> {
 }
 
 #[async_trait]
-#[allow(clippy::module_name_repetitions)]
 pub trait AppWorker<T>: Worker<T>
 where
     Self: Sized,

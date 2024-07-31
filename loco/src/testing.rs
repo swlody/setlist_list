@@ -125,7 +125,6 @@ pub async fn boot_test<H: Hooks>(pool: PgPool) -> Result<BootResult> {
     H::boot(boot::StartMode::ServerOnly, &Environment::Test, Some(pool)).await
 }
 
-#[allow(clippy::future_not_send)]
 /// Initiates a test request with a provided callback.
 ///
 ///
@@ -156,7 +155,6 @@ pub async fn boot_test<H: Hooks>(pool: PgPool) -> Result<BootResult> {
 ///     .await;
 /// }
 /// ```
-#[allow(clippy::future_not_send)]
 pub async fn request<H: Hooks, F, Fut>(pool: PgPool, callback: F) -> eyre::Result<()>
 where
     F: FnOnce(TestServer, AppContext) -> Fut,

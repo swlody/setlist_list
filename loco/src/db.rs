@@ -16,7 +16,6 @@ use crate::{app::Hooks, config, errors::Error};
 /// # Errors
 ///
 /// This function will return an error if IO fails
-#[allow(clippy::match_wildcard_for_single_variants)]
 pub async fn verify_access(db: &PgPool) -> AppResult<()> {
     let res = sqlx::query("SELECT * FROM pg_catalog.pg_tables WHERE tableowner = current_user")
         .fetch_all(db)

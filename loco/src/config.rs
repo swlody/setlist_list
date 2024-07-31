@@ -132,7 +132,6 @@ pub struct Logger {
 ///   dangerously_recreate: false
 /// ```
 #[derive(Debug, Clone, Deserialize, Serialize)]
-#[allow(clippy::struct_excessive_bools)]
 pub struct Database {
     /// The URI for connecting to the database. For example:
     /// * Postgres: `postgres://root:12341234@localhost:5432/myapp_development`
