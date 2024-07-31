@@ -107,18 +107,18 @@ jobs:
             --partition count:${{ matrix.partition }}/2
 
   clippy:
-      name: Run Clippy
-      runs-on: ubuntu-latest
+    name: Run Clippy
+    runs-on: ubuntu-latest
+    # Ensure build is fully run so that the cache is initialized
+    needs: build-test-artifacts
 
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            # By default actions/checkout checks out a merge commit. Check out the PR head instead.
-            # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
-            ref: ${{ github.event.pull_request.head.sha }}
-        - uses: dtolnay/rust-toolchain@stable
-        - uses: Swatinem/rust-cache@v2
-        - uses: dtolnay/rust-toolchain@stable
-          with:
-            components: clippy
-        - run: cargo clippy --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms -A clippy::redundant_else -A clippy::missing_errors_doc -A clippy::option-if-let-else -A clippy::missing_panics_doc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo clippy --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery -W rust-2018-idioms -A clippy::redundant_else -A clippy::missing_errors_doc -A clippy::option-if-let-else -A clippy::missing_panics_doc
