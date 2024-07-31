@@ -59,7 +59,7 @@ async fn register(
     hx_redirect(&PathAndQuery::from_static("/register/success"))
 }
 
-fn login_cookie_redirect(ctx: &AppContext, user: &users::Model) -> Result<Response> {
+fn login_cookie_redirect(ctx: &AppContext, user: &users::Model, hx: bool) -> Result<Response> {
     let jwt_secret = ctx.config.get_jwt_config()?;
 
     let token = user
@@ -83,7 +83,7 @@ fn login_cookie_redirect(ctx: &AppContext, user: &users::Model) -> Result<Respon
         .same_site(cookie::SameSite::Lax)
         .build();
 
-    redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie])
+    redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie], hx)
 }
 
 /// Verify register user. if the user not verified his email, he can't login to
@@ -102,7 +102,8 @@ async fn verify(
     } else {
         user.verified(&ctx.db).await?;
         tracing::info!(id = user.id.to_string(), "user verified");
-        login_cookie_redirect(&ctx, &user)
+        // Since we are coming from a third part, (email), don't set hx-redirect
+        login_cookie_redirect(&ctx, &user, false)
     }
 }
 
@@ -156,7 +157,7 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
         return unauthorized("unauthorized! email not verified");
     }
 
-    login_cookie_redirect(&ctx, &user)
+    login_cookie_redirect(&ctx, &user, true)
 }
 
 #[debug_handler]
@@ -175,7 +176,7 @@ async fn logout(_auth: auth::JWT, State(_ctx): State<AppContext>) -> Result<Resp
         .same_site(cookie::SameSite::None)
         .build();
 
-    redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie])
+    redirect_with_cookies(&PathAndQuery::from_static("/"), &[cookie], true)
 }
 
 pub async fn login_page(

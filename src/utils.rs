@@ -19,9 +19,12 @@ pub fn hx_redirect(redirect_to: &PathAndQuery) -> Result<Response> {
 pub fn redirect_with_cookies(
     redirect_to: &PathAndQuery,
     cookies: &[Cookie<'_>],
+    hx: bool,
 ) -> Result<Response> {
-    format::RenderBuilder::new()
-        .header(HX_REDIRECT, redirect_to.path())
-        .cookies(cookies)?
-        .redirect(redirect_to.path())
+    let builder = format::RenderBuilder::new().cookies(cookies)?;
+    if hx {
+        builder.header(HX_REDIRECT, redirect_to.path()).empty()
+    } else {
+        builder.redirect(redirect_to.path())
+    }
 }

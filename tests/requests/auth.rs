@@ -192,7 +192,7 @@ async fn can_reset_password(pool: PgPool) -> eyre::Result<()> {
             }))
             .await;
 
-        assert_eq!(response.status_code(), 303);
+        assert_eq!(response.status_code(), 200);
 
         let mailer = ctx.mailer.context("could not get mailer")?;
 
