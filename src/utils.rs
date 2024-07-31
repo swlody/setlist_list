@@ -1,8 +1,9 @@
-use crate::models::users;
-use ::cookie::Cookie;
 use axum::http::uri::PathAndQuery;
 use axum_htmx::HX_REDIRECT;
+use cookie::Cookie;
 use loco_rs::prelude::*;
+
+use crate::models::users;
 
 #[must_use]
 pub fn get_username(jwt_user: Option<auth::JWTWithUser<users::Model>>) -> Option<String> {

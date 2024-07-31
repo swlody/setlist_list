@@ -1,3 +1,5 @@
+use std::{path::PathBuf, sync::Arc};
+
 use axum::{async_trait, Extension, Router as AxumRouter};
 use loco_rs::{
     app::{AppContext, Initializer},
@@ -8,7 +10,6 @@ use minijinja::{path_loader, Environment};
 #[cfg(debug_assertions)]
 use minijinja_autoreload::AutoReloader;
 use serde::Serialize;
-use std::{path::PathBuf, sync::Arc};
 
 #[derive(Clone)]
 pub struct MiniJinjaView {

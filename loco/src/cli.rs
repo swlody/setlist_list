@@ -148,6 +148,7 @@ pub async fn main<H: Hooks>() -> eyre::Result<()> {
             println!("{}", H::app_version(),);
         }
     }
+
     Ok(())
 }
 

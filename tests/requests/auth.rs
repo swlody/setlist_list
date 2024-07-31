@@ -5,9 +5,8 @@ use loco_rs::testing;
 use setlist_list::{app::App, models::users};
 use sqlx::PgPool;
 
-use crate::utils::get_random_user_email;
-
 use super::prepare_data;
+use crate::utils::get_random_user_email;
 
 // TODO: see how to dedup / extract this to app-local test utils
 // not to framework, because that would require a runtime dep on insta

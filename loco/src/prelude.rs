@@ -4,7 +4,6 @@ pub use axum::{
     response::{IntoResponse, Response},
     routing::{delete, get, post, put},
 };
-pub use axum_extra::extract::cookie;
 pub use include_dir::{include_dir, Dir};
 
 #[cfg(feature = "auth_jwt")]

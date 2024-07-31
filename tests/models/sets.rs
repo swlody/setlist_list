@@ -1,7 +1,6 @@
 use insta::assert_debug_snapshot;
 use loco_rs::testing;
-use setlist_list::app::App;
-use setlist_list::models::sets::Model;
+use setlist_list::{app::App, models::sets::Model};
 use sqlx::PgPool;
 use uuid::uuid;
 
