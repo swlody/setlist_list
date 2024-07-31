@@ -180,6 +180,8 @@ pub trait Hooks {
 
     // Runs migrations on the database.
     async fn migrate(db: &PgPool) -> Result<()>;
+
+    async fn cleanup(ctx: &AppContext) -> Result<()>;
 }
 
 /// An initializer.

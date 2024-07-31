@@ -100,4 +100,9 @@ impl Hooks for App {
         sqlx::migrate!().run(db).await?;
         Ok(())
     }
+
+    async fn cleanup(ctx: &AppContext) -> Result<()> {
+        ctx.db.close().await;
+        Ok(())
+    }
 }
