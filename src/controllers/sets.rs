@@ -3,6 +3,7 @@ use axum::{debug_handler, http::uri::PathAndQuery};
 use chrono::{NaiveDate, NaiveDateTime, Utc};
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
@@ -19,11 +20,8 @@ pub struct Params {
     pub city: Option<String>,
     pub event_name: Option<String>,
     pub event_date: NaiveDate,
-    pub doors_time: Option<NaiveDateTime>,
-    pub scheduled_start: Option<NaiveDateTime>,
-    pub actual_start: Option<NaiveDateTime>,
-    pub end_time: Option<NaiveDateTime>,
-    pub setlist: Option<serde_json::Value>,
+    pub start_time: Option<NaiveDateTime>,
+    pub setlist: Option<Value>,
 }
 
 impl Params {
@@ -34,10 +32,7 @@ impl Params {
         item.city = self.city;
         item.event_name = self.event_name;
         item.event_date = self.event_date;
-        item.doors_time = self.doors_time;
-        item.scheduled_start = self.scheduled_start;
-        item.actual_start = self.actual_start;
-        item.end_time = self.end_time;
+        item.start_time = self.start_time;
         item.setlist = self.setlist;
     }
 }

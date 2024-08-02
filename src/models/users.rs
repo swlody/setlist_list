@@ -170,9 +170,10 @@ impl Model {
 
         let user = sqlx::query_as!(
             Self,
-            "INSERT INTO users (id, email, password, api_key, username, reset_token, \
-             reset_sent_at, email_verification_token, email_verification_sent_at, \
-             email_verified_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
+            r#"INSERT INTO users (id, email, password, api_key, username, reset_token,
+            reset_sent_at, email_verification_token, email_verification_sent_at, email_verified_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING *"#,
             user.id,
             user.email,
             user.password,
@@ -213,8 +214,8 @@ impl Model {
         self.email_verification_token = Some(Uuid::new_v4());
         self.updated_at = Utc::now().naive_utc();
         sqlx::query!(
-            "UPDATE users SET email_verification_sent_at = $1, email_verification_token = $2, \
-             updated_at = $3",
+            r#"UPDATE users
+               SET email_verification_sent_at = $1, email_verification_token = $2, updated_at = $3"#,
             self.email_verification_sent_at,
             self.email_verification_token,
             self.updated_at

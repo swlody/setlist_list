@@ -8,9 +8,6 @@ CREATE TABLE IF NOT EXISTS sets (
     city text,
     event_name text,
     event_date date NOT NULL,
-    doors_time timestamp,
-    scheduled_start timestamp,
-    actual_start timestamp,
-    end_time timestamp,
+    start_time timestamp,
     setlist json
 )

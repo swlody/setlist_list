@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users\n               SET email_verification_sent_at = $1, email_verification_token = $2, updated_at = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamp",
+        "Uuid",
+        "Timestamp"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f1d263f903104880378a9c2bc9a4e6dacd233a55aa7238c68aec642baa942d01"
+}
