@@ -2,13 +2,14 @@
 //! either the SMTP protocol. It includes an asynchronous method `mail` for
 //! sending emails with options like sender, recipient, subject, and content.
 
+use eyre::Report;
 use lettre::{
     message::MultiPart, transport::smtp::authentication::Credentials, AsyncTransport, Message,
     Tokio1Executor, Transport,
 };
 
 use super::{Email, Result, DEFAULT_FROM_SENDER};
-use crate::{config, errors::Error};
+use crate::config;
 
 /// An enumeration representing the possible transport methods for sending
 /// emails.
@@ -46,7 +47,7 @@ impl EmailSender {
             lettre::AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.host)
                 .map_err(|error| {
                     tracing::error!(err.msg = %error, err.detail = ?error, "smtp_init_error");
-                    Error::Any("error initialize smtp mailer".to_string().into())
+                    Report::msg("error initialize smtp mailer")
                 })?
                 .port(config.port)
         } else {
@@ -122,7 +123,7 @@ impl EmailSender {
             .multipart(content)
             .map_err(|error| {
                 tracing::error!(err.msg = %error, err.detail = ?error, "email_building_error");
-                Error::Any("error building email message".to_string().into())
+                Report::msg("error building email message")
             })?;
 
         match &self.transport {
@@ -131,7 +132,7 @@ impl EmailSender {
             }
             EmailTransport::Test(xp) => {
                 xp.send(&msg)
-                    .map_err(|_| Error::Any("sending email error".to_string().into()))?;
+                    .map_err(|_| Report::msg("sending email error"))?;
             }
         };
         Ok(())

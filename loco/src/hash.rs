@@ -24,7 +24,7 @@ pub fn hash_password(pass: &str) -> Result<String> {
         argon2::Version::V0x13,
         Params::default(),
     );
-    let salt = SaltString::generate(&mut rand::rngs::OsRng);
+    let salt = SaltString::generate(&mut rand::rngs::ThreadRng::default());
 
     Ok(arg2
         .hash_password(pass.as_bytes(), &salt)

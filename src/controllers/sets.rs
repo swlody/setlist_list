@@ -133,7 +133,7 @@ pub async fn add(
     State(ctx): State<AppContext>,
     Json(params): Json<Params>,
 ) -> Result<Response> {
-    let uuid = uuid::Uuid::parse_str(&auth.claims.id).map_err(|e| ModelError::Any(e.into()))?;
+    let uuid = uuid::Uuid::parse_str(&auth.claims.id)?;
     let mut item = sets::Model {
         id: Uuid::now_v7(),
         creator_id: uuid,

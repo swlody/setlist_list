@@ -47,16 +47,16 @@ impl MiniJinjaView {
 
 fn render<S: Serialize>(env: &Environment<'static>, key: &str, data: S) -> Result<String> {
     if let Some((key, block)) = key.split_once(':') {
-        let tmpl = env.get_template(key).map_err(|e| Error::Anyhow(e.into()))?;
+        let tmpl = env.get_template(key).map_err(|e| Error::Any(e.into()))?;
 
         tmpl.eval_to_state(data)
-            .map_err(|e| Error::Anyhow(e.into()))?
+            .map_err(|e| Error::Any(e.into()))?
             .render_block(block)
-            .map_err(|e| Error::Anyhow(e.into()))
+            .map_err(|e| Error::Any(e.into()))
     } else {
-        let tmpl = env.get_template(key).map_err(|e| Error::Anyhow(e.into()))?;
+        let tmpl = env.get_template(key).map_err(|e| Error::Any(e.into()))?;
 
-        tmpl.render(data).map_err(|e| Error::Anyhow(e.into()))
+        tmpl.render(data).map_err(|e| Error::Any(e.into()))
     }
 }
 
@@ -66,7 +66,7 @@ impl ViewRenderer for MiniJinjaView {
         let env = self
             .reloader
             .acquire_env()
-            .map_err(|e| Error::Anyhow(e.into()))?;
+            .map_err(|e| Error::Any(e.into()))?;
 
         render(&env, key, data)
     }

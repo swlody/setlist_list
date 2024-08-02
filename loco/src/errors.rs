@@ -8,6 +8,7 @@ use axum::{
         StatusCode,
     },
 };
+use eyre::Report;
 use lettre::{address::AddressError, transport::smtp};
 
 use crate::controller::ErrorDetail;
@@ -120,15 +121,12 @@ pub enum Error {
     Storage(#[from] crate::storage::StorageError),
 
     #[error(transparent)]
-    Any(#[from] Box<dyn std::error::Error + Send + Sync>),
-
-    #[error(transparent)]
-    Anyhow(#[from] eyre::Report),
+    Any(#[from] eyre::Report),
 }
 
 impl Error {
     pub fn wrap(err: impl std::error::Error + Send + Sync + 'static) -> Self {
-        Self::Any(Box::new(err)) //.bt()
+        Self::Any(Report::new(err)) //.bt()
     }
 
     pub fn msg(err: impl std::error::Error + Send + Sync + 'static) -> Self {

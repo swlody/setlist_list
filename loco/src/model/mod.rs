@@ -38,7 +38,7 @@ pub enum ModelError {
     Sqlx(#[from] sqlx::Error),
 
     #[error(transparent)]
-    Any(#[from] Box<dyn std::error::Error + Send + Sync>),
+    Any(#[from] eyre::Report),
 }
 
 #[allow(clippy::module_name_repetitions)]

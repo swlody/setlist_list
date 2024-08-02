@@ -4,27 +4,31 @@
 
 use std::{fmt, path::PathBuf, str::FromStr as _, time::Duration};
 
-use axum::{http, response::IntoResponse, Router as AXRouter};
+use axum::{
+    http::{self, HeaderName},
+    response::IntoResponse,
+    Router as AXRouter,
+};
+use eyre::Report;
+use hyper::Request;
 use lazy_static::lazy_static;
 use regex::Regex;
 use tower_http::{
-    add_extension::AddExtensionLayer,
     catch_panic::CatchPanicLayer,
     compression::CompressionLayer,
     cors,
+    request_id::{MakeRequestId, PropagateRequestIdLayer, RequestId, SetRequestIdLayer},
     services::{ServeDir, ServeFile},
     set_header::SetResponseHeaderLayer,
     timeout::TimeoutLayer,
-    trace::TraceLayer,
+    trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
 };
+use uuid::Uuid;
 
 #[cfg(feature = "channels")]
 use super::channels::AppChannels;
 use super::routes::Routes;
-use crate::{
-    app::AppContext, config, controller::middleware::etag::EtagLayer, environment::Environment,
-    errors, Result,
-};
+use crate::{app::AppContext, config, controller::middleware::etag::EtagLayer, errors, Result};
 
 lazy_static! {
     static ref NORMALIZE_URL: Regex = Regex::new(r"/+").unwrap();
@@ -59,6 +63,16 @@ impl fmt::Display for ListRoutes {
             .join(",");
 
         write!(f, "[{}] {}", actions_str, self.uri)
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct MakeRequestUuidV7;
+impl MakeRequestId for MakeRequestUuidV7 {
+    fn make_request_id<B>(&mut self, _request: &Request<B>) -> Option<RequestId> {
+        // Use UUIDv7 so that request ID can be sorted by time
+        let request_id = Uuid::now_v7().to_string().parse().unwrap();
+        Some(RequestId::new(request_id))
     }
 }
 
@@ -205,7 +219,7 @@ impl AppRoutes {
 
         if let Some(logger) = &ctx.config.server.middlewares.logger {
             if logger.enable {
-                app = Self::add_logger_middleware(app, &ctx.environment);
+                app = Self::add_logger_middleware(app);
             }
         }
 
@@ -354,7 +368,7 @@ impl AppRoutes {
         #[allow(clippy::cast_possible_truncation)]
         let app = app.layer(axum::extract::DefaultBodyLimit::max(
             byte_unit::Byte::from_str(&limit.body_limit)
-                .map_err(Box::from)?
+                .map_err(Report::new)?
                 .as_u64() as usize,
         ));
         tracing::info!(
@@ -364,37 +378,19 @@ impl AppRoutes {
 
         Ok(app)
     }
-    fn add_logger_middleware(
-        app: AXRouter<AppContext>,
-        environment: &Environment,
-    ) -> AXRouter<AppContext> {
+    fn add_logger_middleware(app: AXRouter<AppContext>) -> AXRouter<AppContext> {
+        // Enables tracing for each request and adds a request ID header to resposne
         let app = app
             .layer(
-                TraceLayer::new_for_http().make_span_with(|request: &http::Request<_>| {
-                    let request_id = uuid::Uuid::new_v4();
-                    let user_agent = request
-                        .headers()
-                        .get(axum::http::header::USER_AGENT)
-                        .map_or("", |h| h.to_str().unwrap_or(""));
-
-                    let env: String = request
-                        .extensions()
-                        .get::<Environment>()
-                        .map(std::string::ToString::to_string)
-                        .unwrap_or_default();
-
-                    tracing::error_span!(
-                        "http-request",
-                        "http.method" = tracing::field::display(request.method()),
-                        "http.uri" = tracing::field::display(request.uri()),
-                        "http.version" = tracing::field::debug(request.version()),
-                        "http.user_agent" = tracing::field::display(user_agent),
-                        "environment" = tracing::field::display(env),
-                        request_id = tracing::field::display(request_id),
-                    )
-                }),
+                TraceLayer::new_for_http()
+                    .make_span_with(DefaultMakeSpan::new().include_headers(true))
+                    .on_response(DefaultOnResponse::new().include_headers(true)),
             )
-            .layer(AddExtensionLayer::new(environment.clone()));
+            .layer(SetRequestIdLayer::new(
+                HeaderName::from_static("x-request-id"),
+                MakeRequestUuidV7,
+            ))
+            .layer(PropagateRequestIdLayer::x_request_id());
 
         tracing::info!("[Middleware] Adding log trace id",);
         app

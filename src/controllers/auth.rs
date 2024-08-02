@@ -67,12 +67,12 @@ fn login_cookie_redirect(ctx: &AppContext, user: &users::Model, hx: bool) -> Res
 
     let now = SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .map_err(|e| Error::Anyhow(e.into()))?
+        .map_err(|e| Error::Any(e.into()))?
         .as_secs();
     let jwt_expiration =
-        i64::try_from(now + jwt_secret.expiration).map_err(|e| Error::Anyhow(e.into()))?;
+        i64::try_from(now + jwt_secret.expiration).map_err(|e| Error::Any(e.into()))?;
     let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration)
-        .map_err(|e| Error::Anyhow(e.into()))?;
+        .map_err(|e| Error::Any(e.into()))?;
 
     let cookie = CookieBuilder::new("token", token)
         .path("/")
@@ -163,11 +163,11 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
 async fn logout(_auth: auth::JWT, State(_ctx): State<AppContext>) -> Result<Response> {
     let now = SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .map_err(|e| Error::Anyhow(e.into()))?
+        .map_err(|e| Error::Any(e.into()))?
         .as_secs();
-    let jwt_expiration = i64::try_from(now + 10).map_err(|e| Error::Anyhow(e.into()))?;
+    let jwt_expiration = i64::try_from(now + 10).map_err(|e| Error::Any(e.into()))?;
     let expiry_time = time::OffsetDateTime::from_unix_timestamp(jwt_expiration)
-        .map_err(|e| Error::Anyhow(e.into()))?;
+        .map_err(|e| Error::Any(e.into()))?;
 
     let cookie = CookieBuilder::new("token", "deleted")
         .path("/")

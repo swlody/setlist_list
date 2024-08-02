@@ -72,7 +72,7 @@ thiserror = "1"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 
-tower-http = { workspace = true }
+tower-http = { features = ["request-id"], workspace = true }
 byte-unit = "5.1.4"
 
 argon2 = { version = "0.5.2", features = ["std"] }

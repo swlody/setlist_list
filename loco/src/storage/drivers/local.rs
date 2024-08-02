@@ -1,3 +1,4 @@
+use eyre::Report;
 use object_store::local::LocalFileSystem;
 
 use super::{object_store_adapter::ObjectStoreAdapter, StoreDriver};
@@ -28,6 +29,6 @@ pub fn new() -> Box<dyn StoreDriver> {
 /// Returns an error if the path does not exist
 pub fn new_with_prefix(prefix: impl AsRef<std::path::Path>) -> Result<Box<dyn StoreDriver>> {
     Ok(Box::new(ObjectStoreAdapter::new(Box::new(
-        LocalFileSystem::new_with_prefix(prefix).map_err(Box::from)?,
+        LocalFileSystem::new_with_prefix(prefix).map_err(Report::new)?,
     ))))
 }

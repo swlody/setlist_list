@@ -7,6 +7,7 @@ mod template;
 
 use async_trait::async_trait;
 pub use email_sender::EmailSender;
+use eyre::Report;
 use include_dir::Dir;
 use serde::{Deserialize, Serialize};
 use sidekiq::Worker;
@@ -80,7 +81,7 @@ pub trait Mailer {
 
         MailerWorker::perform_later(ctx, email.clone())
             .await
-            .map_err(Box::from)?;
+            .map_err(Report::new)?;
         Ok(())
     }
 

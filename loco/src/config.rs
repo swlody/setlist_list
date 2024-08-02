@@ -27,6 +27,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use eyre::Report;
 use fs_err as fs;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -539,9 +540,6 @@ impl Config {
         self.auth
             .as_ref()
             .and_then(|auth| auth.jwt.as_ref())
-            .map_or_else(
-                || Err(Error::Any("no JWT config found".to_string().into())),
-                Ok,
-            )
+            .map_or_else(|| Err(Error::Any(Report::msg("no JWT config found"))), Ok)
     }
 }
