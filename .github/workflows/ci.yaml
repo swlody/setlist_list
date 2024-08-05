@@ -1,10 +1,12 @@
 name: CI
-on:
-  push:
-    branches:
-      - master
-      - main
-  pull_request:
+# Disable for now in favor of local pre-commit hooks
+# on:
+#   push:
+#     branches:
+#       - master
+#       - main
+#   pull_request:
+on: workflow_dispatch
 
 env:
   RUST_TOOLCHAIN: stable

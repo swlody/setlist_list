@@ -26,15 +26,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'setlist_list-cli'",
+            "name": "Debug executable 'setlist_list'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=setlist_list-cli",
+                    "--bin=setlist_list",
                     "--package=setlist_list"
                 ],
                 "filter": {
-                    "name": "setlist_list-cli",
+                    "name": "setlist_list",
                     "kind": "bin"
                 }
             },
@@ -46,16 +46,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'setlist_list-cli'",
+            "name": "Debug unit tests in executable 'setlist_list'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=setlist_list-cli",
+                    "--bin=setlist_list",
                     "--package=setlist_list"
                 ],
                 "filter": {
-                    "name": "setlist_list-cli",
+                    "name": "setlist_list",
                     "kind": "bin"
                 }
             },

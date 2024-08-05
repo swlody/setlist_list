@@ -1,0 +1,8 @@
+fly.toml
+.git/
+tests/
+examples/
+.vscode/
+.github/
+target/
+assets/node_modules/

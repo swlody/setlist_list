@@ -11,6 +11,10 @@ name = "setlist_list"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
 [dependencies]
 loco-rs = { path = "loco", version = "0.6.1" }
 
@@ -43,11 +47,6 @@ sqlx = { version = "0.8.0", default-features = false, features = [
 ] }
 serde_yaml = "0.9.34"
 tracing-subscriber = "0.3.18"
-
-[[bin]]
-name = "setlist_list-cli"
-path = "src/bin/main.rs"
-required-features = []
 
 [workspace.dependencies]
 async-trait = "0.1.74"

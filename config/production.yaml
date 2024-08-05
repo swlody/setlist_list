@@ -5,11 +5,11 @@ logger:
   # Enable or disable logging.
   enable: true
   # Enable pretty backtrace (sets RUST_BACKTRACE=1)
-  pretty_backtrace: true
+  pretty_backtrace: {{ get_env(name="PRETTY_BACKTRACE", default="false" )}}
   # Log level, options: trace, debug, info, warn or error.
-  level: debug
+  level: {{ get_env(name="LOG_LEVEL", default="debug") }}
   # Define the logging format. options: compact, pretty or json
-  format: compact
+  format: {{ get_env(name="LOG_FORMAT", default="compact") }}
   # By default the logger has filtering only logs that came from your code or logs that came from `loco` framework. to see all third party libraries
   # Uncomment the line below to override to see all third party libraries you can enable this config and override the logger filters.
   # override_filter: trace
@@ -17,14 +17,14 @@ logger:
 # Web server configuration
 server:
   # Port on which the server will listen. the server binding is 0.0.0.0:{PORT}
-  port: 5150
+  port: 8080
   # The UI hostname or IP address that mailers will point to.
-  host: localhost
+  host: {{ get_env(name="SERVER_HOSTNAME", default="localhost") }}
   # Out of the box middleware configuration. to disable middleware you can changed the `enable` field to `false` of comment the middleware block
   middlewares:
     # Enable Etag cache header middleware
     etag:
-      enable: true
+      enable: {{ get_env(name="ENABLE_ETAG", default="true") }}
     # Allows to limit the payload size request. payload that bigger than this file will blocked the request.
     limit_payload:
       # Enable/Disable the middleware.
@@ -46,7 +46,8 @@ server:
       # Duration time in milliseconds.
       timeout: 5000
     cors:
-      enable: true
+      # TODO cors?
+      enable: false
       # Set the value of the [`Access-Control-Allow-Origin`][mdn] header
       # allow_origins:
       #   - https://loco.rs
@@ -85,7 +86,7 @@ mailer:
     # Enable/Disable smtp mailer.
     enable: true
     # SMTP server host. e.x localhost, smtp.gmail.com
-    host: {{ get_env(name="MAILER_HOST", default="localhost") }}
+    host: {{ get_env(name="MAILER_HOST", default="") }}
     # SMTP server port
     port: 587
     # Use secure connection (SSL/TLS).
@@ -104,7 +105,7 @@ mailer:
 # Database Configuration
 database:
   # Database connection URI
-  uri: {{ get_env(name="DATABASE_URL", default="postgres://loco:loco@localhost:5432/setlist_list_development") }}
+  uri: {{ get_env(name="DATABASE_URL", default="") }}
   # When enabled, the sql query will be logged.
   enable_logging: true
   # Set the timeout duration when acquiring a connection.
@@ -114,14 +115,16 @@ database:
   # Minimum number of connections for a pool.
   min_connections: 1
   # Maximum number of connections for a pool.
-  max_connections: 1
+  max_connections: {{ get_env(name="DB_MAX_CONNECTIONS", default="2") }}
   # Run migration up when application loaded
-  auto_migrate: true
+  auto_migrate: {{ get_env(name="DB_AUTO_MIGRATE", default="false") }}
+  # Truncate database when application loaded. This is a dangerous operation, make sure that you using this flag only on dev environments or test mode
+  dangerously_truncate: false
 
 # Queue Configuration
 queue:
   # Redis connection URI
-  uri: {{ get_env(name="REDIS_URL", default="redis://localhost") }}
+  uri: {{ get_env(name="REDIS_URL", default="") }}
   # Dangerously flush all data in Redis on startup. dangerous operation, make sure that you using this flag only on dev environments or test mode
   dangerously_flush: false
 
@@ -130,9 +133,10 @@ auth:
   # JWT authentication
   jwt:
     # Secret key for token generation and verification
-    secret: BxkJ9jcJ3jllEhWQhYwx
+    secret: {{ get_env(name="JWT_SECRET", default="") }}
     # Token expiration time in seconds
-    expiration: 604800 # 7 days
+    # TODO expiration?
+    expiration: {{ get_env(name="JWT_EXPIRATION_SECONDS", default="604800") }} # 7 days
     location:
       from: Cookie
       name: token

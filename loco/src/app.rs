@@ -106,6 +106,11 @@ pub trait Hooks {
     /// # Returns
     /// A Result indicating success () or an error if the server fails to start.
     async fn serve(app: AxumRouter, server_config: ServeParams) -> Result<()> {
+        tracing::info!(
+            "Server started on {}:{}",
+            server_config.binding,
+            server_config.port
+        );
         let listener = tokio::net::TcpListener::bind(&format!(
             "{}:{}",
             server_config.binding, server_config.port
