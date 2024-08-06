@@ -9,6 +9,7 @@ pub mod db;
 
 pub mod model;
 mod template;
+pub mod utils;
 
 pub mod app;
 #[cfg(feature = "cli")]

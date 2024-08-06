@@ -3,6 +3,7 @@ use std::time::SystemTime;
 use ::cookie::CookieBuilder;
 use axum::{debug_handler, extract::Query, http::uri::PathAndQuery};
 use loco_rs::prelude::*;
+use secrecy::Secret;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -27,7 +28,8 @@ pub struct ForgotParams {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ResetParams {
     pub token: Uuid,
-    pub password: String,
+    #[serde(serialize_with = "loco_rs::utils::stars")]
+    pub password: Secret<String>,
 }
 
 /// Register function creates a new user with the given parameters and sends a

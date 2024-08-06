@@ -31,6 +31,7 @@ use eyre::Report;
 use fs_err as fs;
 use lazy_static::lazy_static;
 use minijinja::value::ViaDeserialize;
+use secrecy::Secret;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::info;
@@ -269,7 +270,7 @@ pub struct Server {
 }
 
 fn default_binding() -> String {
-    "0.0.0.0".to_string()
+    "localhost".to_string()
 }
 
 impl Server {
@@ -448,7 +449,8 @@ pub struct MailerAuth {
     /// User
     pub user: String,
     /// Password
-    pub password: String,
+    #[serde(serialize_with = "crate::utils::stars")]
+    pub password: Secret<String>,
 }
 
 #[derive(Deserialize)]

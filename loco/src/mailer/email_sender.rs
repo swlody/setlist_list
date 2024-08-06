@@ -7,6 +7,7 @@ use lettre::{
     message::MultiPart, transport::smtp::authentication::Credentials, AsyncTransport, Message,
     Tokio1Executor, Transport,
 };
+use secrecy::ExposeSecret;
 
 use super::{Email, Result, DEFAULT_FROM_SENDER};
 use crate::config;
@@ -56,8 +57,10 @@ impl EmailSender {
         };
 
         if let Some(auth) = config.auth.as_ref() {
-            email_builder = email_builder
-                .credentials(Credentials::new(auth.user.clone(), auth.password.clone()));
+            email_builder = email_builder.credentials(Credentials::new(
+                auth.user.clone(),
+                auth.password.expose_secret().clone(),
+            ));
         }
 
         Ok(Self {

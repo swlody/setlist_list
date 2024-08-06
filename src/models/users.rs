@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use chrono::offset::Utc;
 use loco_rs::{auth::jwt, hash, prelude::*};
+use secrecy::Secret;
 use serde::{Deserialize, Serialize};
 use sqlx::{
     types::{chrono::NaiveDateTime, Uuid},
@@ -26,13 +27,15 @@ pub struct Model {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoginParams {
     pub email: String,
-    pub password: String,
+    #[serde(serialize_with = "loco_rs::utils::stars")]
+    pub password: Secret<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RegisterParams {
     pub email: String,
-    pub password: String,
+    #[serde(serialize_with = "loco_rs::utils::stars")]
+    pub password: Secret<String>,
     pub username: String,
 }
 
@@ -143,7 +146,7 @@ impl Model {
     ///
     /// when could not verify password
     #[must_use]
-    pub fn verify_password(&self, password: &str) -> bool {
+    pub fn verify_password(&self, password: &Secret<String>) -> bool {
         hash::verify_password(password, &self.password)
     }
 
@@ -282,7 +285,11 @@ impl Model {
     /// # Errors
     ///
     /// when has DB query error or could not hashed the given password
-    pub async fn reset_password(&mut self, db: &PgPool, password: &str) -> ModelResult<()> {
+    pub async fn reset_password(
+        &mut self,
+        db: &PgPool,
+        password: &Secret<String>,
+    ) -> ModelResult<()> {
         self.password = hash::hash_password(password).map_err(|e| ModelError::Any(e.into()))?;
         self.reset_token = None;
         self.reset_sent_at = None;

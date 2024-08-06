@@ -1,5 +1,6 @@
 use insta::assert_debug_snapshot;
 use loco_rs::{model::ModelError, testing};
+use secrecy::Secret;
 use setlist_list::{
     app::App,
     models::users::{Model, RegisterParams},
@@ -24,7 +25,7 @@ async fn can_create_with_password(pool: PgPool) -> eyre::Result<()> {
 
     let params = RegisterParams {
         email: "test@framework.com".to_string(),
-        password: "1234".to_string(),
+        password: Secret::new("1234".to_owned()),
         username: "framework".to_string(),
     };
     let res = Model::create_with_password(&boot.app_context.db, &params).await;
@@ -48,7 +49,7 @@ async fn handle_create_with_password_with_duplicate(pool: PgPool) -> eyre::Resul
         &boot.app_context.db,
         &RegisterParams {
             email: "user1@example.com".to_string(),
-            password: "1234".to_string(),
+            password: Secret::new("1234".to_owned()),
             username: "framework".to_string(),
         },
     )
@@ -197,11 +198,14 @@ async fn can_reset_password(pool: PgPool) -> eyre::Result<()> {
     )
     .await?;
 
-    assert!(user.verify_password("12341234"));
+    assert!(user.verify_password(&Secret::new("12341234".to_owned())));
 
     assert!(user
         .clone()
-        .reset_password(&boot.app_context.db, "new-password")
+        .reset_password(
+            &boot.app_context.db,
+            &Secret::new("new-password".to_owned())
+        )
         .await
         .is_ok());
 
@@ -210,7 +214,7 @@ async fn can_reset_password(pool: PgPool) -> eyre::Result<()> {
         uuid!("11111111-1111-1111-1111-111111111111")
     )
     .await?
-    .verify_password("new-password"));
+    .verify_password(&Secret::new("new-password".to_owned())));
 
     Ok(())
 }

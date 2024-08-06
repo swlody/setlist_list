@@ -47,6 +47,7 @@ sqlx = { version = "0.8.0", default-features = false, features = [
 ] }
 serde_yaml = "0.9.34"
 tracing-subscriber = "0.3.18"
+secrecy = { version = "0.8.0", features = ["serde"] }
 
 [workspace.dependencies]
 async-trait = "0.1.74"
