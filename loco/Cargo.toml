@@ -104,7 +104,9 @@ object_store = { version = "0.10.2", default-features = false }
 
 # cache
 moka = { version = "0.12.7", features = ["sync"], optional = true }
+
 secrecy = { version = "0.8.0", features = ["serde"] }
+rubenvy = "0.1.0"
 
 [package.metadata.docs.rs]
 features = ["testing"]

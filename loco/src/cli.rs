@@ -14,6 +14,8 @@
 //!     cli::main::<App, Migrator>().await
 //! }
 //! ```
+use std::str::FromStr as _;
+
 use clap::{Parser, Subcommand};
 
 use crate::{
@@ -74,7 +76,8 @@ enum Commands {
 /// When could not create app context
 pub async fn playground<H: Hooks>() -> crate::Result<AppContext> {
     let cli = Playground::parse();
-    let environment: Environment = cli.environment.unwrap_or_else(resolve_from_env).into();
+    let environment = Environment::from_str(&cli.environment.unwrap_or_else(resolve_from_env))
+        .map_err(|e| eyre::Error::msg(e))?;
 
     let app_context = create_context::<H>(&environment, None).await?;
     Ok(app_context)
@@ -106,7 +109,10 @@ pub async fn playground<H: Hooks>() -> crate::Result<AppContext> {
 /// ```
 pub async fn main<H: Hooks>() -> eyre::Result<()> {
     let cli: Cli = Cli::parse();
-    let environment: Environment = cli.environment.unwrap_or_else(resolve_from_env).into();
+    let environment = Environment::from_str(&cli.environment.unwrap_or_else(resolve_from_env))
+        .map_err(|e| eyre::Error::msg(e))?;
+
+    rubenvy::rubenvy(environment.clone().into())?;
 
     let config = environment.load()?;
 
