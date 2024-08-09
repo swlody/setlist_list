@@ -8,9 +8,15 @@
   {% block body %}
     <div class="prose p-10">
       <h1>View set: {{ item.id }}</h1>
-      <label><b>Band name:</b> {{ item.band_name }}</label>
+      <label
+        ><b>DJ:</b>
+        {% for dj_name in item.dj_names %}
+          {{ dj_name }}
+          {% if not loop.last %}B2B{% endif %}
+        {% endfor %}
+      </label>
       <br />
-      <label><b>Date:</b> {{ item.date }}</label>
+      <label><b>Start time:</b> {{ item.start_time }}</label>
       <br />
       <label><b>Venue:</b> {{ item.venue }}</label>
       <br />
