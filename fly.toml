@@ -10,7 +10,7 @@ primary_region = 'iad'
 
 [env]
 PORT = '8080'
-# SERVER_HOSTNAME = "setlistlist.com"
+SERVER_HOSTNAME = "https://setlist-list.fly.dev"
 
 [http_service]
 internal_port = 8080

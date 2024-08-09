@@ -8,7 +8,6 @@ INSERT INTO
         venue,
         city,
         event_name,
-        event_date,
         start_time,
         setlist
     )
@@ -24,7 +23,6 @@ VALUES (
         'Marble Bar',
         'Detroit',
         'Movement Festival',
-        '2022-05-27',
-        '2022-05-27T11:00:00.000',
+        '2022-05-27T11:00',
         '{}'
     )

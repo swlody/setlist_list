@@ -1,8 +1,8 @@
 use auth::JWTWithUser;
 use axum::{debug_handler, http::uri::PathAndQuery};
-use chrono::{NaiveDate, NaiveDateTime, Utc};
+use chrono::{NaiveDateTime, Utc};
 use loco_rs::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -13,14 +13,29 @@ use crate::{
     views,
 };
 
+fn html_datetime<'de, D>(d: D) -> Result<NaiveDateTime, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(d)?;
+    let formatted = if s.len() == 16 {
+        // "yyyy-MM-ddTHH:mm" has length 16
+        format!("{s}:00")
+    } else {
+        s
+    };
+
+    NaiveDateTime::parse_from_str(&formatted, "%Y-%m-%dT%H:%M:%S").map_err(de::Error::custom)
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
     pub dj_names: Vec<String>,
     pub venue: Option<String>,
     pub city: Option<String>,
     pub event_name: Option<String>,
-    pub event_date: NaiveDate,
-    pub start_time: Option<NaiveDateTime>,
+    #[serde(deserialize_with = "html_datetime")]
+    pub start_time: NaiveDateTime,
     pub setlist: Option<Value>,
 }
 
@@ -31,7 +46,6 @@ impl Params {
         item.venue = self.venue;
         item.city = self.city;
         item.event_name = self.event_name;
-        item.event_date = self.event_date;
         item.start_time = self.start_time;
         item.setlist = self.setlist;
     }

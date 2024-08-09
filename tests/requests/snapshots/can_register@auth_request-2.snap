@@ -5,6 +5,6 @@ expression: mailer.deliveries()
 Deliveries {
     count: 1,
     messages: [
-        "From: System <system@example.com>\r\nTo: LOCO_USER@loco.com\r\nSubject: Welcome LOCO_USER\r\nMIME-Version: 1.0\r\nDate: DATE\r\nContent-Type: multipart/alternative;\r\n boundary=\"IDENTIFIER\"\r\n\r\n--IDENTIFIER\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nWelcome LOCO_USER, you can now log in.\r\n  Verify your account with the link below:\r\n\r\n  http://http://localhost:5150/verify_email?token=3DRANDOM_IDNTIFIER--\r\n",
+        "From: System <system@example.com>\r\nTo: LOCO_USER@loco.com\r\nSubject: Welcome LOCO_USER\r\nMIME-Version: 1.0\r\nDate: DATE\r\nContent-Type: multipart/alternative;\r\n boundary=\"IDENTIFIER\"\r\n\r\n--IDENTIFIER\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nWelcome LOCO_USER, you can now log in.\r\n  Verify your account with the link below:\r\n\r\n  http://localhost:5150/verify_email?token=3DRANDOM_IDNTIFIER--\r\n",
     ],
 }

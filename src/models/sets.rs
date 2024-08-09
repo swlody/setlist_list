@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use loco_rs::model::{ModelError, ModelResult};
 use serde::{Deserialize, Serialize};
 use sqlx::{
-    types::{chrono::NaiveDate, JsonValue, Uuid},
+    types::{JsonValue, Uuid},
     PgPool,
 };
 
@@ -16,8 +16,7 @@ pub struct Model {
     pub venue: Option<String>,
     pub city: Option<String>,
     pub event_name: Option<String>,
-    pub event_date: NaiveDate,
-    pub start_time: Option<NaiveDateTime>,
+    pub start_time: NaiveDateTime,
     pub setlist: Option<JsonValue>,
 }
 
@@ -52,15 +51,14 @@ impl Model {
 
     pub async fn insert(&self, db: &PgPool) -> ModelResult<()> {
         sqlx::query!(
-            r#"INSERT INTO sets (id, creator_id, dj_names, venue, city, event_name, event_date, start_time, setlist)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
+            r#"INSERT INTO sets (id, creator_id, dj_names, venue, city, event_name, start_time, setlist)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"#,
             self.id,
             self.creator_id,
             &self.dj_names,
             self.venue,
             self.city,
             self.event_name,
-            self.event_date,
             self.start_time,
             self.setlist
         )
@@ -72,12 +70,11 @@ impl Model {
     pub async fn update(&self, db: &PgPool) -> ModelResult<()> {
         sqlx::query!(
             r#"UPDATE sets
-            SET dj_names = $1, venue = $2, city = $3, event_name = $4, event_date = $5, start_time = $6, setlist = $7"#,
+            SET dj_names = $1, venue = $2, city = $3, event_name = $4, start_time = $5, setlist = $6"#,
             &self.dj_names,
             self.venue,
             self.city,
             self.event_name,
-            self.event_date,
             self.start_time,
             self.setlist
         )

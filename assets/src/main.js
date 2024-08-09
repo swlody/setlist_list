@@ -19,6 +19,21 @@ htmx.defineExtension("json-enc", {
 
   encodeParameters: function (xhr, parameters, _elt) {
     xhr.overrideMimeType("text/json");
-    return JSON.stringify(parameters);
+
+    const dataObject = {};
+
+    parameters.forEach((value, key) => {
+      if (key.endsWith("[]")) {
+        const arrayKey = key.slice(0, -2);
+        if (!dataObject[arrayKey]) {
+          dataObject[arrayKey] = [];
+        }
+        dataObject[arrayKey].push(value);
+      } else {
+        dataObject[key] = value;
+      }
+    });
+
+    return JSON.stringify(dataObject);
   },
 });

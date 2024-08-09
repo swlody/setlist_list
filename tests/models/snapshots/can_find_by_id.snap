@@ -20,10 +20,7 @@ Model {
     event_name: Some(
         "Movement Festival",
     ),
-    event_date: 2022-05-27,
-    start_time: Some(
-        2022-05-27T11:00:00,
-    ),
+    start_time: 2022-05-27T11:00:00,
     setlist: Some(
         Object {},
     ),

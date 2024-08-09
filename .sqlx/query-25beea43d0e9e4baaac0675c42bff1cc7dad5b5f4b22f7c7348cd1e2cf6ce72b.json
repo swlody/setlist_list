@@ -45,16 +45,11 @@
       },
       {
         "ordinal": 8,
-        "name": "event_date",
-        "type_info": "Date"
-      },
-      {
-        "ordinal": 9,
         "name": "start_time",
         "type_info": "Timestamp"
       },
       {
-        "ordinal": 10,
+        "ordinal": 9,
         "name": "setlist",
         "type_info": "Json"
       }
@@ -72,7 +67,6 @@
       true,
       true,
       false,
-      true,
       true
     ]
   },

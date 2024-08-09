@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS sets (
     venue text NOT NULL,
     city text,
     event_name text,
-    event_date date NOT NULL,
-    start_time timestamp,
+    start_time timestamp NOT NULL,
     setlist json
 )

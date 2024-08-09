@@ -11,25 +11,52 @@
         <h1>Create new set</h1>
         <div>
           <input
+            id="band-name-input"
             type="text"
             placeholder="Band name"
             name="band_name"
             class="input input-bordered w-full max-w-xs"
           />
           <input
-            id="date"
-            name="date"
-            type="date"
+            id="event-name-input"
+            type="text"
+            placeholder="Event name"
+            name="event_name"
             class="input input-bordered w-full max-w-xs"
-            value=""
           />
           <input
+            id="venue-input"
             type="text"
             placeholder="Venue"
             name="venue"
             class="input input-bordered w-full max-w-xs"
           />
-          <br />
+          <input
+            id="city-input"
+            type="text"
+            placeholder="City"
+            name="city"
+            class="input input-bordered w-full max-w-xs"
+          />
+          <input
+            id="set-start-time-input"
+            type="datetime-local"
+            placeholder="Set start time"
+            name="start_time"
+            class="input input-bordered w-full max-w-xs"
+          />
+          <div id="djs-input" x-data="{ djs: 1 }">
+            <template x-for="dj in djs">
+              <input
+                type="text"
+                placeholder="DJ Name"
+                name="dj_names[]"
+                class="input input-bordered w-full max-w-xs"
+              />
+            </template>
+            <button class="btn" type="button" x-show="djs < 8" x-on:click="djs++">+</button>
+            <button class="btn" type="button" x-show="djs > 1" x-on:click="djs--">-</button>
+          </div>
           {# TODO actually flex this #}
           <textarea
             cols="29"
@@ -37,9 +64,7 @@
             placeholder="Setlist"
           ></textarea>
         </div>
-        <div>
-          <button class="btn" type="submit">Submit</button>
-        </div>
+        <button class="btn" type="submit">Submit</button>
       </form>
     </div>
   {% endblock %}
