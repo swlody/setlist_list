@@ -116,19 +116,17 @@
           <div id="account-stuff" class="flex justify-around">
             <div x-show="form != 'login'">
               Already have an account?
-              <a class="link link-accent" x-on:click="form = 'login'">
-                Login
-              </a>
+              <a class="link link-accent" @click="form = 'login'"> Login </a>
             </div>
             <div x-show="form != 'register'">
-              <a class="link link-accent" x-on:click="form = 'register'">
+              <a class="link link-accent" @click="form = 'register'">
                 Create an account
               </a>
             </div>
             <a
               class="link link-accent"
               x-show="form != 'forgot'"
-              x-on:click="form = 'forgot'"
+              @click="form = 'forgot'"
             >
               Forgot password?
             </a>

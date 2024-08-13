@@ -9,7 +9,7 @@ INSERT INTO
         city,
         event_name,
         start_time,
-        setlist
+        duration_seconds
     )
 VALUES (
         '2022-06-02T11:00:00.000',
@@ -24,5 +24,5 @@ VALUES (
         'Detroit',
         'Movement Festival',
         '2022-05-27T11:00',
-        '{}'
+        '3600'
     )

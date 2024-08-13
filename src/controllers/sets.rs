@@ -3,7 +3,6 @@ use axum::{debug_handler, http::uri::PathAndQuery};
 use chrono::{NaiveDateTime, Utc};
 use loco_rs::prelude::*;
 use serde::{de, Deserialize, Deserializer, Serialize};
-use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
@@ -28,7 +27,7 @@ where
     NaiveDateTime::parse_from_str(&formatted, "%Y-%m-%dT%H:%M:%S").map_err(de::Error::custom)
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Params {
     pub dj_names: Vec<String>,
     pub venue: Option<String>,
@@ -36,7 +35,8 @@ pub struct Params {
     pub event_name: Option<String>,
     #[serde(deserialize_with = "html_datetime")]
     pub start_time: NaiveDateTime,
-    pub setlist: Option<Value>,
+    pub duration_seconds: Option<i32>,
+    pub setlist: Vec<Song>,
 }
 
 impl Params {
@@ -47,8 +47,17 @@ impl Params {
         item.city = self.city;
         item.event_name = self.event_name;
         item.start_time = self.start_time;
-        item.setlist = self.setlist;
+        item.duration_seconds = self.duration_seconds;
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Song {
+    pub track_title: String,
+    pub track_artist: String,
+    pub track_number: Option<i32>,
+    pub track_start_time_offset_seconds: Option<i32>,
+    pub track_duration_seconds: Option<i32>,
 }
 
 async fn load_item(ctx: &AppContext, id: Uuid) -> Result<sets::Model> {

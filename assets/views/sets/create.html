@@ -15,23 +15,18 @@
               <input
                 type="text"
                 placeholder="DJ Name"
-                name="dj_names[]"
+                :name="`dj_names[${dj - 1}]`"
                 class="input input-bordered w-full max-w-xs"
               />
             </template>
-            <button
-              class="btn"
-              type="button"
-              x-show="djs < 8"
-              x-on:click="djs++"
-            >
+            <button class="btn" type="button" x-show="djs < 8" @click="djs++">
               +
             </button>
             <button
               class="btn"
               type="button"
               x-show="djs > 1"
-              x-on:click="djs--"
+              @click="djs--"
               value="-"
             >
               -
@@ -65,11 +60,41 @@
             name="start_time"
             class="input input-bordered w-full max-w-xs"
           />
-          <textarea
-            cols="29"
-            class="textarea textarea-bordered w-full max-w-xs"
-            placeholder="Setlist"
-          ></textarea>
+          <div id="songs-input" x-data="{ songs: 1 }">
+            <template x-for="song in songs">
+              <div class="flex flex-row">
+                <input
+                  type="text"
+                  placeholder="Song title"
+                  :name="`setlist[${song - 1}].track_title`"
+                  class="input input-bordered w-full max-w-xs"
+                />
+                <input
+                  type="text"
+                  placeholder="Song artist"
+                  :name="`setlist[${song - 1}].track_artist`"
+                  class="input input-bordered w-full max-w-xs"
+                />
+              </div>
+            </template>
+            <button
+              class="btn"
+              type="button"
+              x-show="songs < 50"
+              @click="songs++"
+            >
+              +
+            </button>
+            <button
+              class="btn"
+              type="button"
+              x-show="songs > 1"
+              @click="songs--"
+              value="-"
+            >
+              -
+            </button>
+          </div>
         </div>
         <input class="btn" type="submit" value="Submit" />
       </form>

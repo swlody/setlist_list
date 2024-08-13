@@ -50,8 +50,8 @@
       },
       {
         "ordinal": 9,
-        "name": "setlist",
-        "type_info": "Json"
+        "name": "duration_seconds",
+        "type_info": "Int4"
       }
     ],
     "parameters": {
@@ -69,7 +69,7 @@
       true,
       true,
       false,
-      true
+      false
     ]
   },
   "hash": "d73d9955da6a3f9c9f2fecbe8a7e18844c8093e5e6b8adce8627d03ad3f473bf"

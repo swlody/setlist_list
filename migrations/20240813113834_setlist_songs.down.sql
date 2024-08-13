@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS setlist_songs;

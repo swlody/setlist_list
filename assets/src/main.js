@@ -10,6 +10,14 @@ Alpine.start();
 // HTMX init
 import htmx from "htmx.org";
 
+// TODO it would be nice if this were all TypeScript
+
+if (!Array.prototype.last) {
+  Array.prototype.last = function () {
+    return this[this.length - 1];
+  };
+}
+
 htmx.defineExtension("json-enc", {
   onEvent: function (name, evt) {
     if (name === "htmx:configRequest") {
@@ -22,15 +30,42 @@ htmx.defineExtension("json-enc", {
 
     const dataObject = {};
 
+    // key[0] = a
+    // key[1] = b
+    // maps to JSON => key: ["a", "b"]
+
+    // key[0].a = "a"
+    // key[0].b = "b"
+    // key[1].a = "c"
+    // key[1].b = "d"
+    // maps to JSON => [
+    //   { a: "a", b: "b" },
+    //   { a: "c", b: "d" }
+    // ]
     parameters.forEach((value, key) => {
-      if (key.endsWith("[]")) {
-        const arrayKey = key.slice(0, -2);
-        if (!dataObject[arrayKey]) {
-          dataObject[arrayKey] = [];
+      const [arrayKey, memberName] = key.split(".", 2);
+
+      if (arrayKey.endsWith("]")) {
+        const [newKey, index] = arrayKey.slice(0, -1).split("[", 2);
+        if (!dataObject[newKey]) {
+          dataObject[newKey] = [];
         }
-        dataObject[arrayKey].push(value);
+
+        if (memberName) {
+          if (!dataObject[newKey][index]) {
+            dataObject[newKey][index] = {};
+          }
+
+          dataObject[newKey][index][memberName] = value;
+        } else {
+          dataObject[newKey][index] = value;
+        }
       } else {
-        dataObject[key] = value;
+        if (memberName) {
+          dataObject[arrayKey][memberName] = value;
+        } else {
+          dataObject[arrayKey] = value;
+        }
       }
     });
 

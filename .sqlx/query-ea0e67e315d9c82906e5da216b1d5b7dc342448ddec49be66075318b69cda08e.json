@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO sets (id, creator_id, dj_names, venue, city, event_name, start_time, setlist)\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+  "query": "INSERT INTO sets (id, creator_id, dj_names, venue, city, event_name, start_time, duration_seconds)\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
   "describe": {
     "columns": [],
     "parameters": {
@@ -12,10 +12,10 @@
         "Text",
         "Text",
         "Timestamp",
-        "Json"
+        "Int4"
       ]
     },
     "nullable": []
   },
-  "hash": "d61fb7c9f946af94a55cf91738c57d0ce61b8077d09526268fee39ad6d250a75"
+  "hash": "ea0e67e315d9c82906e5da216b1d5b7dc342448ddec49be66075318b69cda08e"
 }

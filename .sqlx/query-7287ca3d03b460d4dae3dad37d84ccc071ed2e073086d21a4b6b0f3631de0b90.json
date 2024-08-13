@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM setlist_songs WHERE setlist_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "setlist_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "track_title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "track_artist",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "track_number",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "track_start_time_offset_seconds",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "track_duration_seconds",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "7287ca3d03b460d4dae3dad37d84ccc071ed2e073086d21a4b6b0f3631de0b90"
+}

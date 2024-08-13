@@ -28,7 +28,7 @@
                 type="checkbox"
                 class="theme-controller invisible"
                 x-data="{ dark_theme_checked: $persist(false) }"
-                x-on:click="dark_theme_checked = !dark_theme_checked"
+                @click="dark_theme_checked = !dark_theme_checked"
                 :checked="dark_theme_checked"
                 value="dark"
               />

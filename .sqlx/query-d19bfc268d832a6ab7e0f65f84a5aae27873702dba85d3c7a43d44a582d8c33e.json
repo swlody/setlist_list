@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE sets\n            SET dj_names = $1, venue = $2, city = $3, event_name = $4, start_time = $5, setlist = $6",
+  "query": "UPDATE sets\n            SET dj_names = $1, venue = $2, city = $3, event_name = $4, start_time = $5, duration_seconds = $6",
   "describe": {
     "columns": [],
     "parameters": {
@@ -10,10 +10,10 @@
         "Text",
         "Text",
         "Timestamp",
-        "Json"
+        "Int4"
       ]
     },
     "nullable": []
   },
-  "hash": "afd5a638f4aacfc54a69522dd2c3332a5bf960babe656ce848734b0bcd3b6441"
+  "hash": "d19bfc268d832a6ab7e0f65f84a5aae27873702dba85d3c7a43d44a582d8c33e"
 }
