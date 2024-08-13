@@ -7,7 +7,7 @@
   <a href="{{domain}}/verify_email?token={{verifyToken}}">
     Verify Your Account
   </a>
-  <p>Best regards,<br>The Loco Team</p>
+  <p><br>SetListList</p>
 </body>
 
 </html>
