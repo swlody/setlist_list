@@ -164,6 +164,9 @@ pub struct Database {
     /// database every time you need.
     #[serde(default)]
     pub auto_migrate: bool,
+
+    /// List of files to seed the database with when application loads.
+    pub seed_fixtures: Option<Vec<String>>,
 }
 
 /// Redis Configuration

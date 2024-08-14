@@ -6,6 +6,7 @@
 use std::{str::FromStr as _, time::Duration};
 
 use sqlx::{ConnectOptions, PgPool};
+use tokio::fs;
 use tracing::info;
 
 use super::Result as AppResult;
@@ -39,6 +40,14 @@ pub async fn converge<H: Hooks>(db: &PgPool, config: &config::Database) -> AppRe
         info!("auto migrating");
         H::migrate(db).await?;
     }
+
+    if let Some(seed_fixtures) = &config.seed_fixtures {
+        for fixture in seed_fixtures {
+            let query = fs::read_to_string(fixture).await?;
+            sqlx::query(&query).execute(db).await?;
+        }
+    }
+
     Ok(())
 }
 

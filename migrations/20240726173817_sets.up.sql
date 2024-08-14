@@ -8,5 +8,5 @@ CREATE TABLE IF NOT EXISTS sets (
     city text,
     event_name text,
     start_time timestamp NOT NULL,
-    duration_seconds integer NOT NULL
+    duration_seconds integer
 )

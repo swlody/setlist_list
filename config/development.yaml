@@ -117,6 +117,9 @@ database:
   max_connections: 1
   # Run migration up when application loaded
   auto_migrate: true
+  # Seed the database when application loaded
+  seed_fixtures:
+    - seeds/users.sql
 
 # Queue Configuration
 queue:

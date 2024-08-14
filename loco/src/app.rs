@@ -186,6 +186,7 @@ pub trait Hooks {
     // Runs migrations on the database.
     async fn migrate(db: &PgPool) -> Result<()>;
 
+    // Cleanup any outstanding handles - i.e. database connections.
     async fn cleanup(ctx: &AppContext) -> Result<()>;
 }
 
