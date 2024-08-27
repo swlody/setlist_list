@@ -63,9 +63,7 @@ pub fn is_valid_email(email: &str) -> Result<(), ValidationError> {
     }
 }
 
-///
-/// <DbErr conversion hack>
-///
+/// `DbErr` conversion hack
 ///
 /// Convert `ModelValidationErrors` (pretty) into a `DbErr` (ugly) for database
 /// handling. Because `DbErr` is used in model hooks and we implement the hooks
